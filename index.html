@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sohbet Alanı</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        
+        body {
+            background-color: #0d0d0d;
+            color: #e6e6e6;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Giriş / Şifre Ekranı */
+        #login-screen {
+            background: #141414;
+            border: 1px solid #262626;
+            padding: 40px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 380px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        #login-screen h2 {
+            font-size: 20px;
+            margin-bottom: 24px;
+            letter-spacing: 1px;
+            color: #ffffff;
+        }
+
+        .input-group {
+            margin-bottom: 16px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #888;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .custom-input {
+            width: 100%;
+            padding: 12px;
+            background: #0a0a0a;
+            border: 1px solid #282828;
+            border-radius: 6px;
+            color: #fff;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        .custom-input:focus {
+            border-color: #666;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 12px;
+            background: #ffffff;
+            color: #000000;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #cccccc;
+        }
+
+        /* Sohbet Ekranı */
+        #chat-container {
+            display: none;
+            width: 100%;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: #111111;
+            border-right: 1px solid #222222;
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .room-tag {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .room-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+            padding: 10px;
+            background: #1a1a1a;
+            border-radius: 6px;
+            border-left: 3px solid #fff;
+            margin-bottom: 24px;
+        }
+
+        .online-list {
+            flex: 1;
+        }
+
+        .user-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: #aaa;
+            padding: 6px 0;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background-color: #10b981; /* Ufak canlı yeşil vurgu */
+            border-radius: 50%;
+        }
+
+        .chat-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #0d0d0d;
+        }
+
+        .messages-area {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .msg {
+            max-width: 65%;
+            background: #161616;
+            border: 1px solid #222222;
+            padding: 12px 16px;
+            border-radius: 8px;
+            align-self: flex-start;
+        }
+
+        .msg.me {
+            align-self: flex-end;
+            background: #222222;
+            border-color: #333333;
+        }
+
+        .msg-meta {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 4px;
+            font-size: 11px;
+        }
+
+        .msg-user {
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .msg-time {
+            color: #555;
+        }
+
+        .msg-text {
+            font-size: 14px;
+            color: #dddddd;
+            line-height: 1.4;
+        }
+
+        .input-bar {
+            padding: 16px 24px;
+            border-top: 1px solid #1f1f1f;
+            background: #0d0d0d;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 12px;
+            background: #141414;
+            border: 1px solid #262626;
+            padding: 6px 6px 6px 16px;
+            border-radius: 8px;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .send-btn {
+            background: #ffffff;
+            color: #000000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .send-btn:hover {
+            background: #e0e0e0;
+        }
+
+        .error-msg {
+            color: #ef4444;
+            font-size: 12px;
+            margin-top: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- GİRİŞ EKRANI -->
+    <div id="login-screen">
+        <h2>ÖZEL SOHBET ODA</h2>
+        <div class="input-group">
+            <label>Kullanıcı Adı</label>
+            <input type="text" id="username-input" class="custom-input" placeholder="İsminiz..." autocomplete="off">
+        </div>
+        <div class="input-group">
+            <label>Oda Şifresi</label>
+            <input type="password" id="password-input" class="custom-input" placeholder="Oda şifresi..." autocomplete="off">
+        </div>
+        <button id="join-btn" class="btn-primary">Giriş Yap</button>
+        <div id="error-box" class="error-msg">Şifre hatalı!</div>
+    </div>
+
+    <!-- SOHBET EKRANI -->
+    <div id="chat-container">
+        <div class="sidebar">
+            <div class="room-tag">Aktif Oda</div>
+            <div class="room-title"># Özel Kanal</div>
+            <div class="room-tag">Çevrim İçi</div>
+            <div class="online-list" id="user-list">
+                <!-- Kullanıcılar buraya eklenecek -->
+            </div>
+        </div>
+
+        <div class="chat-main">
+            <div class="messages-area" id="messages"></div>
+            <div class="input-bar">
+                <form id="chat-form" class="input-wrapper">
+                    <input type="text" id="msg-input" class="chat-input" placeholder="Bir şeyler yaz..." autocomplete="off" required>
+                    <button type="submit" class="send-btn">Gönder</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        const loginScreen = document.getElementById('login-screen');
+        const chatContainer = document.getElementById('chat-container');
+        const usernameInput = document.getElementById('username-input');
+        const passwordInput = document.getElementById('password-input');
+        const joinBtn = document.getElementById('join-btn');
+        const errorBox = document.getElementById('error-box');
+
+        const form = document.getElementById('chat-form');
+        const input = document.getElementById('msg-input');
+        const messagesDiv = document.getElementById('messages');
+        const userListDiv = document.getElementById('user-list');
+
+        let currentUser = "";
+
+        joinBtn.addEventListener('click', () => {
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            if (username && password) {
+                currentUser = username;
+                socket.emit('joinRoom', { username, password });
+            }
+        });
+
+        socket.on('loginSuccess', () => {
+            loginScreen.style.display = 'none';
+            chatContainer.style.display = 'flex';
+        });
+
+        socket.on('loginError', (msg) => {
+            errorBox.innerText = msg;
+            errorBox.style.display = 'block';
+        });
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (input.value.trim()) {
+                socket.emit('chatMessage', { user: currentUser, text: input.value });
+                input.value = '';
+            }
+        });
+
+        socket.on('message', (data) => {
+            const isMe = data.user === currentUser;
+            const msg = document.createElement('div');
+            msg.classList.add('msg');
+            if (isMe) msg.classList.add('me');
+
+            msg.innerHTML = `
+                <div class="msg-meta">
+                    <span class="msg-user">${data.user}</span>
+                    <span class="msg-time">${data.time}</span>
+                </div>
+                <div class="msg-text">${data.text}</div>
+            `;
+            messagesDiv.appendChild(msg);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        });
+
+        socket.on('updateUserList', (users) => {
+            userListDiv.innerHTML = '';
+            users.forEach(user => {
+                const item = document.createElement('div');
+                item.classList.add('user-item');
+                item.innerHTML = `<div class="status-dot"></div><span>${user}</span>`;
+                userListDiv.appendChild(item);
+            });
+        });
+    </script>
+</body>
+</html>
