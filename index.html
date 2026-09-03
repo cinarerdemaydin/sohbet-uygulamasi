@@ -9,11 +9,11 @@
         body { background-color: #0d0d0d; color: #e6e6e6; height: 100vh; display: flex; align-items: center; justify-content: center; }
 
         /* Giriş Ekranı */
-        #login-screen { background: #141414; border: 1px solid #262626; padding: 40px; border-radius: 12px; width: 100%; max-width: 380px; text-align: center; }
-        #login-screen h2 { font-size: 20px; margin-bottom: 24px; color: #fff; }
-        .input-group { margin-bottom: 16px; text-align: left; }
+        #login-screen { background: #141414; border: 1px solid #262626; padding: 30px; border-radius: 12px; width: 100%; max-width: 380px; text-align: center; }
+        #login-screen h2 { font-size: 20px; margin-bottom: 20px; color: #fff; }
+        .input-group { margin-bottom: 14px; text-align: left; }
         .input-group label { display: block; font-size: 11px; text-transform: uppercase; color: #888; margin-bottom: 6px; }
-        .custom-input { width: 100%; padding: 12px; background: #0a0a0a; border: 1px solid #282828; border-radius: 6px; color: #fff; outline: none; }
+        .custom-input, .custom-select { width: 100%; padding: 12px; background: #0a0a0a; border: 1px solid #282828; border-radius: 6px; color: #fff; outline: none; }
         .btn-primary { width: 100%; padding: 12px; background: #fff; color: #000; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; margin-top: 10px; }
 
         /* Ana Sohbet Ekranı */
@@ -41,16 +41,28 @@
             100% { opacity: 1; transform: scale(1); }
         }
 
-        .online-list { flex: 1; }
-        .user-item { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #aaa; padding: 6px 0; }
-        .status-dot { width: 6px; height: 6px; background-color: #10b981; border-radius: 50%; }
+        .online-list { flex: 1; overflow-y: auto; }
+        
+        /* Kullanıcı Listesi Öğe Stili ve Konuşma Işığı */
+        .user-item { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; padding: 8px; border-radius: 6px; transition: all 0.2s ease; }
+        .status-dot { width: 8px; height: 8px; background-color: #444; border-radius: 50%; transition: all 0.2s ease; }
+        
+        /* Discord Tarzı Konuşma Efekti (Işık Yanması) */
+        .user-item.speaking {
+            background: rgba(16, 185, 129, 0.15);
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+        }
+        .user-item.speaking .status-dot {
+            background-color: #10b981;
+            box-shadow: 0 0 8px #10b981;
+        }
 
         .chat-main { flex: 1; display: flex; flex-direction: column; background: #0d0d0d; }
         .messages-area { flex: 1; padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
         .msg { max-width: 65%; background: #161616; border: 1px solid #222; padding: 12px 16px; border-radius: 8px; align-self: flex-start; }
         .msg.me { align-self: flex-end; background: #222; border-color: #333; }
         .msg-meta { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 4px; font-size: 11px; }
-        .msg-user { font-weight: 600; color: #fff; }
+        .msg-user { font-weight: 600; }
         .msg-time { color: #555; }
         .msg-text { font-size: 14px; color: #dddddd; }
 
@@ -65,10 +77,23 @@
 
     <!-- GİRİŞ EKRANI -->
     <div id="login-screen">
-        <h2>ÖZEL SOHBET ODA</h2>
+        <h2>ÖZEL SOHBET ODASI</h2>
         <div class="input-group">
             <label>Kullanıcı Adı</label>
             <input type="text" id="username-input" class="custom-input" placeholder="İsminiz..." autocomplete="off">
+        </div>
+        <div class="input-group">
+            <label>İsim Rengi</label>
+            <select id="color-input" class="custom-select">
+                <option value="#3b82f6">Mavi</option>
+                <option value="#10b981">Yeşil</option>
+                <option value="#ef4444">Kırmızı</option>
+                <option value="#ec4899">Pembe</option>
+                <option value="#a855f7">Eflatun / Mor</option>
+                <option value="#f97316">Turuncu</option>
+                <option value="#eab308">Sarı</option>
+                <option value="#06b6d4">Çyan / Turkuaz</option>
+            </select>
         </div>
         <div class="input-group">
             <label>Oda Şifresi</label>
@@ -86,7 +111,6 @@
             
             <div class="room-tag">Sesli Kanal</div>
             <div class="voice-box">
-                <!-- Ses Bilgi ve Sayaç Alanı -->
                 <div id="voice-status" class="voice-status">
                     <div class="voice-status-left">
                         <div class="voice-dot"></div>
@@ -124,6 +148,7 @@
         const loginScreen = document.getElementById('login-screen');
         const chatContainer = document.getElementById('chat-container');
         const usernameInput = document.getElementById('username-input');
+        const colorInput = document.getElementById('color-input');
         const passwordInput = document.getElementById('password-input');
         const joinBtn = document.getElementById('join-btn');
         const errorBox = document.getElementById('error-box');
@@ -141,20 +166,27 @@
         const audioContainer = document.getElementById('audio-container');
 
         let currentUser = "";
+        let selectedColor = "#3b82f6";
         let localStream = null;
         let peers = {};
         let isMuted = false;
         let timerInterval = null;
         let secondsConnected = 0;
+        let audioContext = null;
+        let analyser = null;
+        let microphone = null;
+        let speakingInterval = null;
 
         const rtcConfig = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
         joinBtn.addEventListener('click', () => {
             const username = usernameInput.value.trim();
             const password = passwordInput.value.trim();
+            selectedColor = colorInput.value;
+
             if (username && password) {
                 currentUser = username;
-                socket.emit('joinRoom', { username, password });
+                socket.emit('joinRoom', { username, password, color: selectedColor });
             }
         });
 
@@ -171,7 +203,7 @@
         form.addEventListener('submit', (e) => {
             e.preventDefault();
             if (input.value.trim()) {
-                socket.emit('chatMessage', { user: currentUser, text: input.value });
+                socket.emit('chatMessage', { text: input.value });
                 input.value = '';
             }
         });
@@ -182,7 +214,7 @@
             msg.classList.add('msg');
             if (isMe) msg.classList.add('me');
             msg.innerHTML = `
-                <div class="msg-meta"><span class="msg-user">${data.user}</span><span class="msg-time">${data.time}</span></div>
+                <div class="msg-meta"><span class="msg-user" style="color:${data.color}">${data.user}</span><span class="msg-time">${data.time}</span></div>
                 <div class="msg-text">${data.text}</div>
             `;
             messagesDiv.appendChild(msg);
@@ -191,10 +223,11 @@
 
         socket.on('updateUserList', (users) => {
             userListDiv.innerHTML = '';
-            users.forEach(user => {
+            users.forEach(u => {
                 const item = document.createElement('div');
                 item.classList.add('user-item');
-                item.innerHTML = `<div class="status-dot"></div><span>${user}</span>`;
+                item.id = `user-item-${u.username}`;
+                item.innerHTML = `<div class="status-dot"></div><span style="color:${u.color}">${u.username}</span>`;
                 userListDiv.appendChild(item);
             });
         });
@@ -218,6 +251,55 @@
             voiceTimer.innerText = "00:00";
         }
 
+        // KONUŞMA TESPİTİ (DISCORD IŞIK EFEKTİ)
+        function setupAudioAnalysis(stream) {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioContext.createAnalyser();
+            microphone = audioContext.createMediaStreamSource(stream);
+            microphone.connect(analyser);
+            analyser.fftSize = 512;
+
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            let wasSpeaking = false;
+
+            speakingInterval = setInterval(() => {
+                if (isMuted) {
+                    if (wasSpeaking) {
+                        wasSpeaking = false;
+                        socket.emit('speakingStatus', false);
+                    }
+                    return;
+                }
+
+                analyser.getByteFrequencyData(dataArray);
+                let sum = 0;
+                for (let i = 0; i < bufferLength; i++) {
+                    sum += dataArray[i];
+                }
+                let average = sum / bufferLength;
+
+                // Hassasiyet eşiği (Ses seviyesi 15'ten büyükse konuşuyor kabul edilir)
+                let isSpeaking = average > 15;
+
+                if (isSpeaking !== wasSpeaking) {
+                    wasSpeaking = isSpeaking;
+                    socket.emit('speakingStatus', isSpeaking);
+                }
+            }, 100);
+        }
+
+        socket.on('userSpeaking', (data) => {
+            // Socket ID'den ilgili kullanıcının elementini bulup ışığını yak/söndür
+            const userList = document.querySelectorAll('.user-item');
+            userList.forEach(item => {
+                if (item.id === `user-item-${currentUser}` && data.id === socket.id) {
+                    if (data.isSpeaking) item.classList.add('speaking');
+                    else item.classList.remove('speaking');
+                }
+            });
+        });
+
         // SESLİ SOHBET
         joinVoiceBtn.addEventListener('click', async () => {
             try {
@@ -236,12 +318,14 @@
                     }, 
                     video: false 
                 });
+
                 joinVoiceBtn.style.display = 'none';
                 leaveVoiceBtn.style.display = 'block';
                 muteVoiceBtn.style.display = 'block';
                 voiceStatus.style.display = 'flex';
 
                 startTimer();
+                setupAudioAnalysis(localStream);
                 socket.emit('joinVoice');
             } catch (err) {
                 alert("Mikrofon izni alınamadı!");
@@ -261,6 +345,9 @@
                 localStream.getTracks().forEach(track => track.stop());
                 localStream = null;
             }
+            if (speakingInterval) clearInterval(speakingInterval);
+            if (audioContext) audioContext.close();
+
             for (let id in peers) {
                 peers[id].close();
             }
