@@ -29,6 +29,18 @@
         .btn-disconnect { background: #ef4444; color: #fff; display: none; }
         .btn-mute { background: #333; color: #fff; display: none; }
 
+        /* Discord Tarzı Ses Bilgi Durumu */
+        .voice-status { display: none; align-items: center; justify-content: space-between; background: #0f1f17; border: 1px solid #10b981; padding: 8px 12px; border-radius: 6px; margin-bottom: 10px; font-size: 12px; color: #10b981; }
+        .voice-status-left { display: flex; align-items: center; gap: 6px; font-weight: 600; }
+        .voice-dot { width: 8px; height: 8px; background-color: #10b981; border-radius: 50%; animation: pulse 1.5s infinite; }
+        .voice-timer { font-family: monospace; font-size: 13px; font-weight: bold; color: #a7f3d0; }
+
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
         .online-list { flex: 1; }
         .user-item { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #aaa; padding: 6px 0; }
         .status-dot { width: 6px; height: 6px; background-color: #10b981; border-radius: 50%; }
@@ -74,6 +86,15 @@
             
             <div class="room-tag">Sesli Kanal</div>
             <div class="voice-box">
+                <!-- Ses Bilgi ve Sayaç Alanı -->
+                <div id="voice-status" class="voice-status">
+                    <div class="voice-status-left">
+                        <div class="voice-dot"></div>
+                        <span>Ses Bağlandı</span>
+                    </div>
+                    <div id="voice-timer" class="voice-timer">00:00</div>
+                </div>
+
                 <button id="join-voice-btn" class="voice-btn btn-connect">Sese Katıl</button>
                 <button id="mute-voice-btn" class="voice-btn btn-mute">Sustur</button>
                 <button id="leave-voice-btn" class="voice-btn btn-disconnect">Ayrıl</button>
@@ -115,12 +136,16 @@
         const joinVoiceBtn = document.getElementById('join-voice-btn');
         const leaveVoiceBtn = document.getElementById('leave-voice-btn');
         const muteVoiceBtn = document.getElementById('mute-voice-btn');
+        const voiceStatus = document.getElementById('voice-status');
+        const voiceTimer = document.getElementById('voice-timer');
         const audioContainer = document.getElementById('audio-container');
 
         let currentUser = "";
         let localStream = null;
         let peers = {};
         let isMuted = false;
+        let timerInterval = null;
+        let secondsConnected = 0;
 
         const rtcConfig = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
@@ -174,7 +199,26 @@
             });
         });
 
-        // DERİN FİLTRELEMELİ SESLİ SOHBET
+        // SAYAÇ FONKSİYONLARI
+        function startTimer() {
+            secondsConnected = 0;
+            voiceTimer.innerText = "00:00";
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                secondsConnected++;
+                const mins = Math.floor(secondsConnected / 60).toString().padStart(2, '0');
+                const secs = (secondsConnected % 60).toString().padStart(2, '0');
+                voiceTimer.innerText = `${mins}:${secs}`;
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            secondsConnected = 0;
+            voiceTimer.innerText = "00:00";
+        }
+
+        // SESLİ SOHBET
         joinVoiceBtn.addEventListener('click', async () => {
             try {
                 localStream = await navigator.mediaDevices.getUserMedia({ 
@@ -184,18 +228,20 @@
                         autoGainControl: true,
                         sampleRate: 48000,
                         sampleSize: 16,
-                        channelCount: 1, // Uğultu ve rüzgar seslerini önlemek için mono ses
+                        channelCount: 1,
                         googEchoCancellation: true,
                         googAutoGainControl: true,
                         googNoiseSuppression: true,
-                        googHighpassFilter: true // Alçak frekans rüzgar/nefes uğultularını keser
+                        googHighpassFilter: true
                     }, 
                     video: false 
                 });
                 joinVoiceBtn.style.display = 'none';
                 leaveVoiceBtn.style.display = 'block';
                 muteVoiceBtn.style.display = 'block';
+                voiceStatus.style.display = 'flex';
 
+                startTimer();
                 socket.emit('joinVoice');
             } catch (err) {
                 alert("Mikrofon izni alınamadı!");
@@ -224,7 +270,9 @@
             joinVoiceBtn.style.display = 'block';
             leaveVoiceBtn.style.display = 'none';
             muteVoiceBtn.style.display = 'none';
-            
+            voiceStatus.style.display = 'none';
+
+            stopTimer();
             socket.emit('leaveVoice');
         });
 
