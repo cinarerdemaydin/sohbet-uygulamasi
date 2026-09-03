@@ -3,238 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sohbet Alanı</title>
+    <title>Sohbet & Ses Alanı</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: #0d0d0d; color: #e6e6e6; height: 100vh; display: flex; align-items: center; justify-content: center; }
+
+        /* Giriş Ekranı */
+        #login-screen { background: #141414; border: 1px solid #262626; padding: 40px; border-radius: 12px; width: 100%; max-width: 380px; text-align: center; }
+        #login-screen h2 { font-size: 20px; margin-bottom: 24px; color: #fff; }
+        .input-group { margin-bottom: 16px; text-align: left; }
+        .input-group label { display: block; font-size: 11px; text-transform: uppercase; color: #888; margin-bottom: 6px; }
+        .custom-input { width: 100%; padding: 12px; background: #0a0a0a; border: 1px solid #282828; border-radius: 6px; color: #fff; outline: none; }
+        .btn-primary { width: 100%; padding: 12px; background: #fff; color: #000; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+
+        /* Ana Sohbet Ekranı */
+        #chat-container { display: none; width: 100%; height: 100vh; }
+        .sidebar { width: 260px; background: #111; border-right: 1px solid #222; padding: 24px 16px; display: flex; flex-direction: column; }
+        .room-tag { font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 12px; }
+        .room-title { font-size: 16px; font-weight: 600; color: #fff; padding: 10px; background: #1a1a1a; border-radius: 6px; border-left: 3px solid #fff; margin-bottom: 20px; }
         
-        body {
-            background-color: #0d0d0d;
-            color: #e6e6e6;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+        /* Ses Kontrol Alanı */
+        .voice-box { background: #161616; border: 1px solid #262626; padding: 12px; border-radius: 8px; margin-bottom: 20px; }
+        .voice-btn { width: 100%; padding: 10px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; margin-bottom: 8px; transition: 0.2s; }
+        .btn-connect { background: #10b981; color: #000; }
+        .btn-disconnect { background: #ef4444; color: #fff; display: none; }
+        .btn-mute { background: #333; color: #fff; display: none; }
 
-        /* Giriş / Şifre Ekranı */
-        #login-screen {
-            background: #141414;
-            border: 1px solid #262626;
-            padding: 40px;
-            border-radius: 12px;
-            width: 100%;
-            max-width: 380px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
+        .online-list { flex: 1; }
+        .user-item { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #aaa; padding: 6px 0; }
+        .status-dot { width: 6px; height: 6px; background-color: #10b981; border-radius: 50%; }
 
-        #login-screen h2 {
-            font-size: 20px;
-            margin-bottom: 24px;
-            letter-spacing: 1px;
-            color: #ffffff;
-        }
+        .chat-main { flex: 1; display: flex; flex-direction: column; background: #0d0d0d; }
+        .messages-area { flex: 1; padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+        .msg { max-width: 65%; background: #161616; border: 1px solid #222; padding: 12px 16px; border-radius: 8px; align-self: flex-start; }
+        .msg.me { align-self: flex-end; background: #222; border-color: #333; }
+        .msg-meta { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 4px; font-size: 11px; }
+        .msg-user { font-weight: 600; color: #fff; }
+        .msg-time { color: #555; }
+        .msg-text { font-size: 14px; color: #dddddd; }
 
-        .input-group {
-            margin-bottom: 16px;
-            text-align: left;
-        }
-
-        .input-group label {
-            display: block;
-            font-size: 11px;
-            text-transform: uppercase;
-            color: #888;
-            margin-bottom: 6px;
-            letter-spacing: 0.5px;
-        }
-
-        .custom-input {
-            width: 100%;
-            padding: 12px;
-            background: #0a0a0a;
-            border: 1px solid #282828;
-            border-radius: 6px;
-            color: #fff;
-            outline: none;
-            transition: 0.2s;
-        }
-
-        .custom-input:focus {
-            border-color: #666;
-        }
-
-        .btn-primary {
-            width: 100%;
-            padding: 12px;
-            background: #ffffff;
-            color: #000000;
-            border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: 0.2s;
-        }
-
-        .btn-primary:hover {
-            background: #cccccc;
-        }
-
-        /* Sohbet Ekranı */
-        #chat-container {
-            display: none;
-            width: 100%;
-            height: 100vh;
-        }
-
-        .sidebar {
-            width: 260px;
-            background: #111111;
-            border-right: 1px solid #222222;
-            padding: 24px 16px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .room-tag {
-            font-size: 12px;
-            color: #666;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 12px;
-        }
-
-        .room-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: #fff;
-            padding: 10px;
-            background: #1a1a1a;
-            border-radius: 6px;
-            border-left: 3px solid #fff;
-            margin-bottom: 24px;
-        }
-
-        .online-list {
-            flex: 1;
-        }
-
-        .user-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 13px;
-            color: #aaa;
-            padding: 6px 0;
-        }
-
-        .status-dot {
-            width: 6px;
-            height: 6px;
-            background-color: #10b981; /* Ufak canlı yeşil vurgu */
-            border-radius: 50%;
-        }
-
-        .chat-main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: #0d0d0d;
-        }
-
-        .messages-area {
-            flex: 1;
-            padding: 24px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .msg {
-            max-width: 65%;
-            background: #161616;
-            border: 1px solid #222222;
-            padding: 12px 16px;
-            border-radius: 8px;
-            align-self: flex-start;
-        }
-
-        .msg.me {
-            align-self: flex-end;
-            background: #222222;
-            border-color: #333333;
-        }
-
-        .msg-meta {
-            display: flex;
-            justify-content: space-between;
-            gap: 12px;
-            margin-bottom: 4px;
-            font-size: 11px;
-        }
-
-        .msg-user {
-            font-weight: 600;
-            color: #ffffff;
-        }
-
-        .msg-time {
-            color: #555;
-        }
-
-        .msg-text {
-            font-size: 14px;
-            color: #dddddd;
-            line-height: 1.4;
-        }
-
-        .input-bar {
-            padding: 16px 24px;
-            border-top: 1px solid #1f1f1f;
-            background: #0d0d0d;
-        }
-
-        .input-wrapper {
-            display: flex;
-            gap: 12px;
-            background: #141414;
-            border: 1px solid #262626;
-            padding: 6px 6px 6px 16px;
-            border-radius: 8px;
-        }
-
-        .chat-input {
-            flex: 1;
-            background: transparent;
-            border: none;
-            outline: none;
-            color: #fff;
-            font-size: 14px;
-        }
-
-        .send-btn {
-            background: #ffffff;
-            color: #000000;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .send-btn:hover {
-            background: #e0e0e0;
-        }
-
-        .error-msg {
-            color: #ef4444;
-            font-size: 12px;
-            margin-top: 10px;
-            display: none;
-        }
+        .input-bar { padding: 16px 24px; border-top: 1px solid #1f1f1f; background: #0d0d0d; }
+        .input-wrapper { display: flex; gap: 12px; background: #141414; border: 1px solid #262626; padding: 6px 6px 6px 16px; border-radius: 8px; }
+        .chat-input { flex: 1; background: transparent; border: none; outline: none; color: #fff; font-size: 14px; }
+        .send-btn { background: #fff; color: #000; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+        .error-msg { color: #ef4444; font-size: 12px; margin-top: 10px; display: none; }
     </style>
 </head>
 <body>
@@ -251,18 +63,24 @@
             <input type="password" id="password-input" class="custom-input" placeholder="Oda şifresi..." autocomplete="off">
         </div>
         <button id="join-btn" class="btn-primary">Giriş Yap</button>
-        <div id="error-box" class="error-msg">Şifre hatalı!</div>
+        <div id="error-box" class="error-msg">Hatalı Şifre!</div>
     </div>
 
-    <!-- SOHBET EKRANI -->
+    <!-- SOHBET VE SES EKRANI -->
     <div id="chat-container">
         <div class="sidebar">
             <div class="room-tag">Aktif Oda</div>
             <div class="room-title"># Özel Kanal</div>
-            <div class="room-tag">Çevrim İçi</div>
-            <div class="online-list" id="user-list">
-                <!-- Kullanıcılar buraya eklenecek -->
+            
+            <div class="room-tag">Sesli Kanal</div>
+            <div class="voice-box">
+                <button id="join-voice-btn" class="voice-btn btn-connect">Sese Katıl</button>
+                <button id="mute-voice-btn" class="voice-btn btn-mute">Sustur</button>
+                <button id="leave-voice-btn" class="voice-btn btn-disconnect">Ayrıl</button>
             </div>
+
+            <div class="room-tag">Çevrim İçi</div>
+            <div class="online-list" id="user-list"></div>
         </div>
 
         <div class="chat-main">
@@ -275,6 +93,8 @@
             </div>
         </div>
     </div>
+
+    <div id="audio-container"></div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
@@ -292,12 +112,21 @@
         const messagesDiv = document.getElementById('messages');
         const userListDiv = document.getElementById('user-list');
 
+        const joinVoiceBtn = document.getElementById('join-voice-btn');
+        const leaveVoiceBtn = document.getElementById('leave-voice-btn');
+        const muteVoiceBtn = document.getElementById('mute-voice-btn');
+        const audioContainer = document.getElementById('audio-container');
+
         let currentUser = "";
+        let localStream = null;
+        let peers = {};
+        let isMuted = false;
+
+        const rtcConfig = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
         joinBtn.addEventListener('click', () => {
             const username = usernameInput.value.trim();
             const password = passwordInput.value.trim();
-
             if (username && password) {
                 currentUser = username;
                 socket.emit('joinRoom', { username, password });
@@ -327,12 +156,8 @@
             const msg = document.createElement('div');
             msg.classList.add('msg');
             if (isMe) msg.classList.add('me');
-
             msg.innerHTML = `
-                <div class="msg-meta">
-                    <span class="msg-user">${data.user}</span>
-                    <span class="msg-time">${data.time}</span>
-                </div>
+                <div class="msg-meta"><span class="msg-user">${data.user}</span><span class="msg-time">${data.time}</span></div>
                 <div class="msg-text">${data.text}</div>
             `;
             messagesDiv.appendChild(msg);
@@ -348,6 +173,102 @@
                 userListDiv.appendChild(item);
             });
         });
+
+        // SESLİ SOHBET
+        joinVoiceBtn.addEventListener('click', async () => {
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                joinVoiceBtn.style.display = 'none';
+                leaveVoiceBtn.style.display = 'block';
+                muteVoiceBtn.style.display = 'block';
+
+                socket.emit('joinVoice');
+            } catch (err) {
+                alert("Mikrofon izni alınamadı!");
+            }
+        });
+
+        muteVoiceBtn.addEventListener('click', () => {
+            if (localStream) {
+                isMuted = !isMuted;
+                localStream.getAudioTracks()[0].enabled = !isMuted;
+                muteVoiceBtn.innerText = isMuted ? "Sesi Aç" : "Sustur";
+            }
+        });
+
+        leaveVoiceBtn.addEventListener('click', () => {
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+            }
+            for (let id in peers) {
+                peers[id].close();
+            }
+            peers = {};
+            audioContainer.innerHTML = '';
+            
+            joinVoiceBtn.style.display = 'block';
+            leaveVoiceBtn.style.display = 'none';
+            muteVoiceBtn.style.display = 'none';
+            
+            socket.emit('leaveVoice');
+        });
+
+        socket.on('userJoinedVoice', async (id) => {
+            const peer = createPeer(id);
+            peers[id] = peer;
+            localStream.getTracks().forEach(track => peer.addTrack(track, localStream));
+            
+            const offer = await peer.createOffer();
+            await peer.setLocalDescription(offer);
+            socket.emit('signal', { to: id, signal: offer });
+        });
+
+        socket.on('signal', async (data) => {
+            if (data.signal.type === 'offer') {
+                const peer = createPeer(data.from);
+                peers[data.from] = peer;
+                localStream.getTracks().forEach(track => peer.addTrack(track, localStream));
+                
+                await peer.setRemoteDescription(new RTCSessionDescription(data.signal));
+                const answer = await peer.createAnswer();
+                await peer.setLocalDescription(answer);
+                socket.emit('signal', { to: data.from, signal: answer });
+            } else if (data.signal.type === 'answer') {
+                await peers[data.from].setRemoteDescription(new RTCSessionDescription(data.signal));
+            } else if (data.signal.candidate) {
+                await peers[data.from].addIceCandidate(new RTCIceCandidate(data.signal.candidate));
+            }
+        });
+
+        socket.on('userLeftVoice', (id) => {
+            if (peers[id]) {
+                peers[id].close();
+                delete peers[id];
+                const audioElement = document.getElementById(`audio-${id}`);
+                if (audioElement) audioElement.remove();
+            }
+        });
+
+        function createPeer(id) {
+            const peer = new RTCPeerConnection(rtcConfig);
+            peer.onicecandidate = (e) => {
+                if (e.candidate) {
+                    socket.emit('signal', { to: id, signal: { candidate: e.candidate } });
+                }
+            };
+            peer.ontrack = (e) => {
+                let audio = document.getElementById(`audio-${id}`);
+                if (!audio) {
+                    audio = document.createElement('audio');
+                    audio.id = `audio-${id}`;
+                    audio.autoplay = true;
+                    audioContainer.appendChild(audio);
+                }
+                audio.srcObject = e.streams[0];
+            };
+            return peer;
+        }
     </script>
 </body>
 </html>
