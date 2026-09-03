@@ -174,14 +174,21 @@
             });
         });
 
-        // GELİŞMİŞ SESLİ SOHBET (Gürültü Engelleme ve Yankı Önleme Dahil)
+        // DERİN FİLTRELEMELİ SESLİ SOHBET
         joinVoiceBtn.addEventListener('click', async () => {
             try {
                 localStream = await navigator.mediaDevices.getUserMedia({ 
                     audio: {
-                        echoCancellation: true,   // Yankı Engelleme
-                        noiseSuppression: true,   // Arka Plan Gürültü Bastırma
-                        autoGainControl: true     // Otomatik Ses Dengeleme
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: true,
+                        sampleRate: 48000,
+                        sampleSize: 16,
+                        channelCount: 1, // Uğultu ve rüzgar seslerini önlemek için mono ses
+                        googEchoCancellation: true,
+                        googAutoGainControl: true,
+                        googNoiseSuppression: true,
+                        googHighpassFilter: true // Alçak frekans rüzgar/nefes uğultularını keser
                     }, 
                     video: false 
                 });
