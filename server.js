@@ -62,7 +62,7 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Sesli Sohbet WebRTC Sinyalleşmesi
+    // Sesli Sohbet & Ekran Paylaşımı WebRTC Sinyalleşmesi
     socket.on('joinVoice', () => {
         socket.broadcast.emit('userJoinedVoice', socket.id);
     });
@@ -70,9 +70,17 @@ io.on('connection', (socket) => {
     socket.on('signal', (data) => {
         io.to(data.to).emit('signal', {
             from: socket.id,
-            signal: data.signal,
-            type: data.type || 'audio'
+            signal: data.signal
         });
+    });
+
+    socket.on('screenShareStarted', () => {
+        const userInfo = users[socket.id];
+        socket.broadcast.emit('userStartedScreenShare', { id: socket.id, username: userInfo ? userInfo.username : 'Kullanıcı' });
+    });
+
+    socket.on('screenShareStopped', () => {
+        socket.broadcast.emit('userStoppedScreenShare', socket.id);
     });
 
     socket.on('speakingStatus', (isSpeaking) => {
@@ -96,6 +104,7 @@ io.on('connection', (socket) => {
             io.emit('updateUserList', Object.values(users));
             io.emit('message', systemMsg);
             socket.broadcast.emit('userLeftVoice', socket.id);
+            socket.broadcast.emit('userStoppedScreenShare', socket.id);
         }
     });
 });
