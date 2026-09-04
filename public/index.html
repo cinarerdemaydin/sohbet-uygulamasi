@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sohbet & Ses Alanı</title>
+    <title>WAFFLE - Sohbet & Ses Alanı</title>
     <!-- FontAwesome İkon Kütüphanesi -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -12,7 +12,9 @@
 
         /* Giriş Ekranı */
         #login-screen { background: #141414; border: 1px solid #262626; padding: 30px; border-radius: 12px; width: 100%; max-width: 380px; text-align: center; }
-        #login-screen h2 { font-size: 20px; margin-bottom: 20px; color: #fff; }
+        .login-brand { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 20px; }
+        .login-brand h2 { font-size: 22px; color: #fff; font-weight: 800; letter-spacing: 1px; }
+        
         .input-group { margin-bottom: 14px; text-align: left; }
         .input-group label { display: block; font-size: 11px; text-transform: uppercase; color: #888; margin-bottom: 6px; }
         .custom-input, .custom-select { width: 100%; padding: 12px; background: #0a0a0a; border: 1px solid #282828; border-radius: 6px; color: #fff; outline: none; }
@@ -21,6 +23,12 @@
         /* Ana Sohbet Ekranı */
         #chat-container { display: none; width: 100%; height: 100vh; }
         .sidebar { width: 260px; background: #111; border-right: 1px solid #222; padding: 16px; display: flex; flex-direction: column; user-select: none; position: relative; }
+        
+        /* Brand / Logo Stilleri */
+        .brand-header { display: flex; align-items: center; gap: 10px; padding-bottom: 12px; margin-bottom: 12px; border-bottom: 1px solid #222; }
+        .brand-header svg { flex-shrink: 0; }
+        .brand-title { font-size: 18px; font-weight: 800; color: #fff; letter-spacing: 1.5px; }
+
         .room-tag { font-size: 11px; color: #666; text-transform: uppercase; margin-bottom: 6px; margin-top: 12px; font-weight: bold; }
         .room-tag:first-child { margin-top: 0; }
         .room-title { font-size: 15px; font-weight: 600; color: #fff; padding: 8px 10px; background: #1a1a1a; border-radius: 6px; border-left: 3px solid #fff; margin-bottom: 8px; }
@@ -181,7 +189,13 @@
 <body>
 
     <div id="login-screen">
-        <h2>ÖZEL SOHBET ODASI</h2>
+        <div class="login-brand">
+            <svg width="28" height="28" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="42" stroke="#ffffff" stroke-width="8"/>
+                <path d="M22 50H78 M50 22V78 M32 25V75 M68 25V75 M25 32H75 M25 68H75" stroke="#ffffff" stroke-width="6"/>
+            </svg>
+            <h2>WAFFLE</h2>
+        </div>
         <div class="input-group">
             <label>Kullanıcı Adı</label>
             <input type="text" id="username-input" class="custom-input" placeholder="İsminiz..." autocomplete="off">
@@ -209,6 +223,15 @@
 
     <div id="chat-container">
         <div class="sidebar">
+            <!-- LOGO VE SİTE ADI -->
+            <div class="brand-header">
+                <svg width="26" height="26" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="50" cy="50" r="42" stroke="#ffffff" stroke-width="8"/>
+                    <path d="M22 50H78 M50 22V78 M32 25V75 M68 25V75 M25 32H75 M25 68H75" stroke="#ffffff" stroke-width="6"/>
+                </svg>
+                <span class="brand-title">WAFFLE</span>
+            </div>
+
             <div class="room-tag">Aktif Oda</div>
             <div id="active-room-title" class="room-title"># Genel</div>
             
