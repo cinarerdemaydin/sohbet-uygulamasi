@@ -16,6 +16,15 @@ app.get('/', (req, res) => {
 });
 
 const users = {};
+// Hangi sesli kanalda kimlerin olduğunu tutacak obje
+const voiceChannels = {
+    "Sesli - Genel": [],
+    "Sesli - Oyun": []
+};
+
+function broadcastVoiceState() {
+    io.emit('updateVoiceState', voiceChannels);
+}
 
 io.on('connection', (socket) => {
 
@@ -27,12 +36,14 @@ io.on('connection', (socket) => {
                 id: socket.id,
                 username: username, 
                 color: color || '#10b981',
-                room: targetRoom
+                room: targetRoom,
+                voiceChannel: null
             };
 
             socket.join(targetRoom);
             socket.emit('loginSuccess');
             io.emit('updateUserList', Object.values(users));
+            broadcastVoiceState();
 
             const systemMsg = {
                 user: "Sistem",
@@ -46,14 +57,12 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Oda Değiştirme Mantığı
     socket.on('switchRoom', (newRoom) => {
         const userInfo = users[socket.id];
         if (userInfo) {
             const oldRoom = userInfo.room;
             socket.leave(oldRoom);
             
-            // Eski odaya ayrıldı bilgisi
             io.to(oldRoom).emit('message', {
                 user: "Sistem",
                 text: `${userInfo.username} odadan ayrıldı.`,
@@ -61,11 +70,9 @@ io.on('connection', (socket) => {
                 color: "#888888"
             });
 
-            // Yeni odaya geçiş
             userInfo.room = newRoom;
             socket.join(newRoom);
 
-            // Yeni odaya katıldı bilgisi
             io.to(newRoom).emit('message', {
                 user: "Sistem",
                 text: `${userInfo.username} odaya katıldı.`,
@@ -88,7 +95,6 @@ io.on('connection', (socket) => {
         }
     });
 
-    // "Yazıyor..." Göstergesi (Sadece aynı odadaki kullanıcılara)
     socket.on('typing', (isTyping) => {
         const userInfo = users[socket.id];
         if (userInfo) {
@@ -96,9 +102,47 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Sesli Sohbet & Ekran Paylaşımı WebRTC Sinyalleşmesi
-    socket.on('joinVoice', () => {
-        socket.broadcast.emit('userJoinedVoice', socket.id);
+    // --- ÇOKLU SES KANALI MİMARİSİ ---
+    socket.on('joinVoiceChannel', (channelName) => {
+        const userInfo = users[socket.id];
+        if (!userInfo) return;
+
+        // Eski kanaldan çıkış yap
+        if (userInfo.voiceChannel) {
+            socket.leave(userInfo.voiceChannel);
+            if (voiceChannels[userInfo.voiceChannel]) {
+                voiceChannels[userInfo.voiceChannel] = voiceChannels[userInfo.voiceChannel].filter(u => u.id !== socket.id);
+            }
+            socket.to(userInfo.voiceChannel).emit('userLeftVoice', socket.id);
+        }
+
+        // Yeni kanala giriş yap
+        userInfo.voiceChannel = channelName;
+        socket.join(channelName);
+
+        if (!voiceChannels[channelName]) {
+            voiceChannels[channelName] = [];
+        }
+        voiceChannels[channelName].push({ id: socket.id, username: userInfo.username });
+
+        // Sadece o kanaldaki diğer kullanıcılara bağlandığını bildir
+        socket.to(channelName).emit('userJoinedVoice', socket.id);
+        broadcastVoiceState();
+    });
+
+    socket.on('leaveVoiceChannel', (channelName) => {
+        const userInfo = users[socket.id];
+        if (userInfo) {
+            userInfo.voiceChannel = null;
+        }
+
+        socket.leave(channelName);
+        if (voiceChannels[channelName]) {
+            voiceChannels[channelName] = voiceChannels[channelName].filter(u => u.id !== socket.id);
+        }
+
+        socket.to(channelName).emit('userLeftVoice', socket.id);
+        broadcastVoiceState();
     });
 
     socket.on('signal', (data) => {
@@ -110,24 +154,33 @@ io.on('connection', (socket) => {
 
     socket.on('screenShareStarted', () => {
         const userInfo = users[socket.id];
-        socket.broadcast.emit('userStartedScreenShare', { id: socket.id, username: userInfo ? userInfo.username : 'Kullanıcı' });
+        if (userInfo && userInfo.voiceChannel) {
+            socket.to(userInfo.voiceChannel).emit('userStartedScreenShare', { id: socket.id, username: userInfo.username });
+        }
     });
 
     socket.on('screenShareStopped', () => {
-        socket.broadcast.emit('userStoppedScreenShare', socket.id);
+        const userInfo = users[socket.id];
+        if (userInfo && userInfo.voiceChannel) {
+            socket.to(userInfo.voiceChannel).emit('userStoppedScreenShare', socket.id);
+        }
     });
 
     socket.on('speakingStatus', (isSpeaking) => {
         io.emit('userSpeaking', { id: socket.id, isSpeaking });
     });
 
-    socket.on('leaveVoice', () => {
-        socket.broadcast.emit('userLeftVoice', socket.id);
-    });
-
     socket.on('disconnect', () => {
         const userInfo = users[socket.id];
         if (userInfo) {
+            if (userInfo.voiceChannel) {
+                socket.to(userInfo.voiceChannel).emit('userLeftVoice', socket.id);
+                socket.to(userInfo.voiceChannel).emit('userStoppedScreenShare', socket.id);
+                if (voiceChannels[userInfo.voiceChannel]) {
+                    voiceChannels[userInfo.voiceChannel] = voiceChannels[userInfo.voiceChannel].filter(u => u.id !== socket.id);
+                }
+            }
+
             const systemMsg = {
                 user: "Sistem",
                 text: `${userInfo.username} ayrıldı.`,
@@ -135,10 +188,10 @@ io.on('connection', (socket) => {
                 color: "#888888"
             };
             io.to(userInfo.room).emit('message', systemMsg);
+            
             delete users[socket.id];
             io.emit('updateUserList', Object.values(users));
-            socket.broadcast.emit('userLeftVoice', socket.id);
-            socket.broadcast.emit('userStoppedScreenShare', socket.id);
+            broadcastVoiceState();
         }
     });
 });
