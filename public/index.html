@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sesli ve Yazılı Sohbet</title>
+    <title>Sohbet Uygulaması</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="/socket.io/socket.io.js"></script>
     <style>
@@ -15,8 +15,8 @@
         }
 
         body {
-            background-color: #1e1f22;
-            color: #dbdee1;
+            background-color: #121212;
+            color: #e0e0e0;
             height: 100vh;
             display: flex;
             overflow: hidden;
@@ -29,7 +29,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: #313338;
+            background-color: #0a0a0a;
             z-index: 9999;
             display: flex;
             justify-content: center;
@@ -37,83 +37,90 @@
         }
 
         .login-box {
-            background-color: #2b2d31;
+            background-color: #1a1a1a;
             padding: 32px;
             border-radius: 8px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+            border: 1px solid #333;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.8);
             width: 100%;
             max-width: 400px;
             text-align: center;
         }
 
         .login-box h2 {
-            color: #f2f3f5;
+            color: #ffffff;
             margin-bottom: 8px;
+            letter-spacing: 1px;
         }
 
         .login-box p {
-            color: #949ba4;
+            color: #888888;
             font-size: 14px;
             margin-bottom: 20px;
         }
 
         .input-group {
-            margin-bottom: 20px;
+            margin-bottom: 16px;
             text-align: left;
         }
 
         .input-group label {
             display: block;
-            color: #b5bac1;
+            color: #aaa;
             font-size: 12px;
             font-weight: bold;
             text-transform: uppercase;
             margin-bottom: 8px;
         }
 
-        .input-group input {
+        .input-group input, .input-group select {
             width: 100%;
             padding: 10px;
-            background-color: #1e1f22;
-            border: none;
+            background-color: #0f0f0f;
+            border: 1px solid #333;
             border-radius: 4px;
-            color: #f2f3f5;
-            font-size: 16px;
+            color: #fff;
+            font-size: 15px;
             outline: none;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            border-color: #fff;
         }
 
         .btn-primary {
             width: 100%;
             padding: 12px;
-            background-color: #5865f2;
-            color: white;
+            background-color: #ffffff;
+            color: #000000;
             border: none;
             border-radius: 4px;
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: background-color 0.2s, color 0.2s;
+            margin-top: 10px;
         }
 
         .btn-primary:hover {
-            background-color: #4752c4;
+            background-color: #ccc;
         }
 
         /* Sol Sidebar - Sunucu/Kanal Listesi */
         .sidebar {
-            width: 240px;
-            background-color: #2b2d31;
+            width: 260px;
+            background-color: #161616;
             display: flex;
             flex-direction: column;
-            border-right: 1px solid #1f2023;
+            border-right: 1px solid #262626;
         }
 
         .server-header {
             padding: 16px;
             font-weight: bold;
-            color: #f2f3f5;
-            border-bottom: 1px solid #1f2023;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            color: #ffffff;
+            border-bottom: 1px solid #262626;
+            letter-spacing: 0.5px;
         }
 
         .channels-container {
@@ -123,12 +130,13 @@
         }
 
         .channel-category {
-            color: #949ba4;
-            font-size: 12px;
+            color: #666;
+            font-size: 11px;
             font-weight: bold;
             text-transform: uppercase;
             padding: 6px 8px;
             margin-top: 12px;
+            letter-spacing: 1px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -141,78 +149,83 @@
         .channel-item {
             display: flex;
             align-items: center;
-            padding: 6px 8px;
+            padding: 8px;
             border-radius: 4px;
-            color: #949ba4;
+            color: #888;
             cursor: pointer;
             margin-bottom: 2px;
             font-size: 14px;
+            transition: all 0.15s ease;
         }
 
         .channel-item:hover {
-            background-color: #35373c;
-            color: #dbdee1;
-        }
-
-        .channel-item.active {
-            background-color: #404249;
+            background-color: #222;
             color: #fff;
         }
 
+        .channel-item.active {
+            background-color: #2a2a2a;
+            color: #fff;
+            border-left: 3px solid #fff;
+        }
+
         .channel-item i {
-            margin-right: 6px;
-            font-size: 16px;
+            margin-right: 8px;
+            font-size: 15px;
         }
 
         .voice-room-users {
             margin-left: 24px;
             font-size: 12px;
-            color: #949ba4;
+            color: #aaa;
         }
 
         .voice-user-tag {
-            padding: 2px 0;
+            padding: 3px 0;
             display: flex;
             align-items: center;
+            gap: 6px;
         }
 
         .voice-timer-badge {
             margin-left: auto;
-            background-color: #232428;
-            color: #23a55a;
+            background-color: #000;
+            color: #fff;
             font-size: 11px;
             padding: 2px 6px;
-            border-radius: 8px;
+            border-radius: 4px;
+            border: 1px solid #333;
             font-family: monospace;
             display: none;
         }
 
         /* Kullanıcı Alt Paneli */
         .user-panel {
-            height: 52px;
-            background-color: #232428;
-            padding: 0 8px;
+            height: 56px;
+            background-color: #0d0d0d;
+            padding: 0 10px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            border-top: 1px solid #262626;
         }
 
         .user-info {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             overflow: hidden;
         }
 
         .user-avatar {
-            width: 32px;
-            height: 32px;
-            background-color: #5865f2;
+            width: 34px;
+            height: 34px;
+            background-color: #fff;
+            color: #000;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
             font-weight: bold;
         }
 
@@ -225,26 +238,37 @@
         .username {
             font-size: 14px;
             font-weight: bold;
-            color: #f2f3f5;
+            color: #fff;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
         .user-status {
-            font-size: 12px;
-            color: #949ba4;
+            font-size: 11px;
+            color: #888;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #22c55e;
+            border-radius: 50%;
+            display: inline-block;
         }
 
         .user-controls {
             display: flex;
-            gap: 4px;
+            gap: 2px;
         }
 
         .icon-btn {
             background: none;
             border: none;
-            color: #b5bac1;
+            color: #888;
             width: 32px;
             height: 32px;
             border-radius: 4px;
@@ -252,15 +276,16 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: background 0.15s, color 0.15s;
         }
 
         .icon-btn:hover {
-            background-color: #35373c;
-            color: #dbdee1;
+            background-color: #222;
+            color: #fff;
         }
 
         .icon-btn.active-danger {
-            color: #f23f43;
+            color: #ef4444;
         }
 
         /* Ana İçerik Alanı */
@@ -268,23 +293,35 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            background-color: #313338;
+            background-color: #121212;
         }
 
         .chat-header {
-            height: 48px;
-            border-bottom: 1px solid #1f2023;
+            height: 52px;
+            border-bottom: 1px solid #262626;
             padding: 0 16px;
             display: flex;
             align-items: center;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
-            color: #f2f3f5;
+            justify-content: space-between;
+            background-color: #161616;
+            color: #fff;
             font-weight: bold;
         }
 
-        .chat-header i {
+        .chat-header-title {
+            display: flex;
+            align-items: center;
+        }
+
+        .chat-header-title i {
             margin-right: 8px;
-            color: #80848e;
+            color: #666;
+        }
+
+        .chat-body-wrapper {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
         }
 
         /* Mesaj Alanı */
@@ -299,20 +336,21 @@
 
         .message {
             display: flex;
-            gap: 16px;
+            gap: 14px;
         }
 
         .message-avatar {
-            width: 40px;
-            height: 40px;
-            background-color: #5865f2;
+            width: 38px;
+            height: 38px;
+            background-color: #262626;
+            color: #fff;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
             font-weight: bold;
             flex-shrink: 0;
+            border: 1px solid #333;
         }
 
         .message-content {
@@ -329,32 +367,73 @@
         .message-author {
             font-size: 14px;
             font-weight: bold;
-            color: #f2f3f5;
+            color: #fff;
         }
 
         .message-time {
-            font-size: 12px;
-            color: #949ba4;
+            font-size: 11px;
+            color: #666;
         }
 
         .message-text {
             font-size: 14px;
-            color: #dbdee1;
+            color: #ccc;
             margin-top: 4px;
             word-break: break-word;
+            line-height: 1.4;
+        }
+
+        /* Çevrimiçi Kullanıcılar Sağ Panel */
+        .online-users-panel {
+            width: 200px;
+            background-color: #161616;
+            border-left: 1px solid #262626;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .online-users-title {
+            font-size: 11px;
+            font-weight: bold;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .online-user-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #aaa;
+        }
+
+        .online-user-item:hover {
+            background-color: #222;
+            color: #fff;
         }
 
         /* Mesaj Yazma Alanı */
         .chat-input-container {
-            padding: 0 16px 24px 16px;
+            padding: 0 16px 20px 16px;
+            background-color: #121212;
         }
 
         .chat-input-wrapper {
-            background-color: #383a40;
-            border-radius: 8px;
+            background-color: #1a1a1a;
+            border: 1px solid #262626;
+            border-radius: 6px;
             padding: 10px 16px;
             display: flex;
             align-items: center;
+        }
+
+        .chat-input-wrapper:focus-within {
+            border-color: #444;
         }
 
         .chat-input-wrapper input {
@@ -362,18 +441,18 @@
             background: none;
             border: none;
             outline: none;
-            color: #f2f3f5;
+            color: #fff;
             font-size: 14px;
         }
 
         /* Ses Kanalı Kontrol Paneli */
         .voice-status-bar {
-            background-color: #111214;
+            background-color: #0a0a0a;
             padding: 8px 16px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            border-bottom: 1px solid #1f2023;
+            border-bottom: 1px solid #262626;
             display: none;
         }
 
@@ -381,16 +460,12 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            color: #23a55a;
+            color: #22c55e;
             font-size: 13px;
         }
 
-        .voice-status-info i {
-            font-size: 16px;
-        }
-
         .voice-timer {
-            color: #949ba4;
+            color: #666;
             font-size: 12px;
             margin-left: 8px;
         }
@@ -401,8 +476,8 @@
             flex-wrap: wrap;
             gap: 10px;
             padding: 10px;
-            background-color: #1e1f22;
-            border-bottom: 1px solid #1f2023;
+            background-color: #000;
+            border-bottom: 1px solid #262626;
             max-height: 40%;
             overflow-y: auto;
             display: none;
@@ -410,8 +485,9 @@
 
         .video-box {
             position: relative;
-            background-color: #000;
-            border-radius: 8px;
+            background-color: #111;
+            border: 1px solid #222;
+            border-radius: 6px;
             overflow: hidden;
             flex: 1 1 300px;
             max-width: 100%;
@@ -430,7 +506,7 @@
             left: 0;
             right: 0;
             padding: 8px;
-            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+            background: linear-gradient(transparent, rgba(0,0,0,0.9));
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -475,20 +551,20 @@
         #context-menu {
             position: absolute;
             display: none;
-            background: #232428;
-            border: 1px solid #111214;
+            background: #1a1a1a;
+            border: 1px solid #333;
             border-radius: 4px;
             padding: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.8);
             z-index: 10000;
-            width: 150px;
+            width: 160px;
         }
 
         #context-menu label {
             font-size: 11px;
-            color: #b5bac1;
+            color: #aaa;
             display: block;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
         }
 
         #context-menu input {
@@ -498,15 +574,30 @@
 </head>
 <body>
 
-    <!-- Giriş Ekranı -->
+    <!-- Giriş Ekranı (Şifre ve Renk Seçimi Dahil) -->
     <div id="login-overlay">
         <div class="login-box">
-            <h2>Hoş Geldiniz!</h2>
-            <p>Sohbete katılmak için bir kullanıcı adı girin.</p>
+            <h2>GİRİŞ YAP</h2>
+            <p>Sohbete katılmak için bilgilerinizi girin.</p>
             <form id="login-form">
                 <div class="input-group">
                     <label>Kullanıcı Adı</label>
-                    <input type="text" id="username-input" required autocomplete="off">
+                    <input type="text" id="username-input" required autocomplete="off" placeholder="Adınız">
+                </div>
+                <div class="input-group">
+                    <label>Oda / Kanal Şifresi</label>
+                    <input type="password" id="password-input" placeholder="Varsa şifre girin">
+                </div>
+                <div class="input-group">
+                    <label>Kullanıcı Rengi</label>
+                    <select id="user-color-input">
+                        <option value="#ffffff">Beyaz</option>
+                        <option value="#3b82f6">Mavi</option>
+                        <option value="#22c55e">Yeşil</option>
+                        <option value="#eab308">Sarı</option>
+                        <option value="#ec4899">Pembe</option>
+                        <option value="#a855f7">Mor</option>
+                    </select>
                 </div>
                 <button type="submit" class="btn-primary">Katıl</button>
             </form>
@@ -516,7 +607,7 @@
     <!-- Sol Sidebar -->
     <div class="sidebar">
         <div class="server-header">
-            Sohbet Sunucusu
+            SOHBET SUNUCUSU
         </div>
         
         <div class="channels-container">
@@ -548,7 +639,7 @@
                 <div class="user-avatar" id="my-avatar">U</div>
                 <div class="user-details">
                     <div class="username" id="my-username">Kullanıcı</div>
-                    <div class="user-status">Çevrimiçi</div>
+                    <div class="user-status"><span class="status-dot"></span> Çevrimiçi</div>
                 </div>
             </div>
             <div class="user-controls">
@@ -576,10 +667,20 @@
         <div class="video-grid" id="video-grid"></div>
 
         <div class="chat-header" id="chat-header">
-            <i class="fa-solid fa-hashtag"></i> genel
+            <div class="chat-header-title">
+                <i class="fa-solid fa-hashtag"></i> <span id="current-channel-title">genel</span>
+            </div>
         </div>
 
-        <div class="messages-container" id="messages-container"></div>
+        <div class="chat-body-wrapper">
+            <div class="messages-container" id="messages-container"></div>
+
+            <!-- Çevrimiçi Kullanıcılar Paneli -->
+            <div class="online-users-panel">
+                <div class="online-users-title">ÇEVRİMİÇİ — <span id="online-count">0</span></div>
+                <div id="online-users-list"></div>
+            </div>
+        </div>
 
         <div class="chat-input-container">
             <form id="chat-form" class="chat-input-wrapper">
@@ -604,14 +705,18 @@
         const loginOverlay = document.getElementById('login-overlay');
         const loginForm = document.getElementById('login-form');
         const usernameInput = document.getElementById('username-input');
+        const passwordInput = document.getElementById('password-input');
+        const userColorInput = document.getElementById('user-color-input');
         
         const myAvatar = document.getElementById('my-avatar');
         const myUsername = document.getElementById('my-username');
         
-        const chatHeader = document.getElementById('chat-header');
+        const chatHeaderTitle = document.getElementById('current-channel-title');
         const messagesContainer = document.getElementById('messages-container');
         const chatForm = document.getElementById('chat-form');
         const chatInput = document.getElementById('chat-input');
+        const onlineUsersList = document.getElementById('online-users-list');
+        const onlineCount = document.getElementById('online-count');
 
         const voiceStatusBox = document.getElementById('voice-status-box');
         const connectedVoiceName = document.getElementById('connected-voice-name');
@@ -628,6 +733,7 @@
 
         // Durum Değişkenleri
         let currentUser = null;
+        let userColor = '#ffffff';
         let currentTextChannel = 'genel';
         let currentVoiceChannel = null;
         let localStream = null;
@@ -655,15 +761,40 @@
         loginForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const val = usernameInput.value.trim();
+            const pass = passwordInput.value.trim();
+            userColor = userColorInput.value;
+
             if (val) {
                 currentUser = val;
                 myUsername.innerText = currentUser;
+                myUsername.style.color = userColor;
                 myAvatar.innerText = currentUser.charAt(0).toUpperCase();
+                myAvatar.style.backgroundColor = userColor;
+                myAvatar.style.color = '#000';
                 loginOverlay.style.display = 'none';
 
-                socket.emit('login', { username: currentUser });
+                socket.emit('login', { 
+                    username: currentUser, 
+                    password: pass,
+                    color: userColor 
+                });
                 socket.emit('joinTextChannel', currentTextChannel);
             }
+        });
+
+        // Çevrimiçi Kullanıcı Listesi Güncelleme
+        socket.on('updateOnlineUsers', (users) => {
+            onlineUsersList.innerHTML = '';
+            onlineCount.innerText = users.length;
+            users.forEach(u => {
+                const item = document.createElement('div');
+                item.classList.add('online-user-item');
+                item.innerHTML = `
+                    <span class="status-dot"></span>
+                    <span style="color: ${u.color || '#fff'}">${u.username}</span>
+                `;
+                onlineUsersList.appendChild(item);
+            });
         });
 
         // Ses Efektleri
@@ -693,7 +824,7 @@
                     document.querySelectorAll('.channel-item[data-channel-type="text"]').forEach(el => el.classList.remove('active'));
                     item.classList.add('active');
                     currentTextChannel = name;
-                    chatHeader.innerHTML = `<i class="fa-solid fa-hashtag"></i> ${name}`;
+                    chatHeaderTitle.innerText = name;
                     chatInput.placeholder = `#${name} kanalına mesaj gönder`;
                     messagesContainer.innerHTML = '';
                     socket.emit('joinTextChannel', name);
@@ -712,7 +843,8 @@
             if (text && currentUser) {
                 socket.emit('sendChatMessage', {
                     channel: currentTextChannel,
-                    text: text
+                    text: text,
+                    color: userColor
                 });
                 chatInput.value = '';
             }
@@ -732,6 +864,9 @@
             const avatarDiv = document.createElement('div');
             avatarDiv.classList.add('message-avatar');
             avatarDiv.innerText = data.user.charAt(0).toUpperCase();
+            if (data.color) {
+                avatarDiv.style.borderColor = data.color;
+            }
 
             const contentDiv = document.createElement('div');
             contentDiv.classList.add('message-content');
@@ -742,6 +877,9 @@
             const authorSpan = document.createElement('span');
             authorSpan.classList.add('message-author');
             authorSpan.innerText = data.user;
+            if (data.color) {
+                authorSpan.style.color = data.color;
+            }
 
             const timeSpan = document.createElement('span');
             timeSpan.classList.add('message-time');
@@ -949,7 +1087,8 @@
                     channelData.users.forEach(user => {
                         const tag = document.createElement('div');
                         tag.classList.add('voice-user-tag');
-                        tag.innerText = user.username;
+                        tag.setAttribute('data-id', user.id || user.socketId);
+                        tag.innerHTML = `<i class="fa-solid fa-microphone" style="font-size: 10px;"></i> <span>${user.username}</span>`;
                         if (user.color) tag.style.color = user.color;
                         targetDiv.appendChild(tag);
                     });
