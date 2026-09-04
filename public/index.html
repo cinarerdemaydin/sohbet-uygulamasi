@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sohbet & Ses Alanı</title>
+    <!-- FontAwesome İkon Kütüphanesi -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background-color: #0d0d0d; color: #e6e6e6; height: 100vh; display: flex; align-items: center; justify-content: center; }
@@ -18,45 +20,26 @@
 
         /* Ana Sohbet Ekranı */
         #chat-container { display: none; width: 100%; height: 100vh; }
-        .sidebar { width: 260px; background: #111; border-right: 1px solid #222; padding: 24px 16px; display: flex; flex-direction: column; user-select: none; }
-        .room-tag { font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 8px; margin-top: 16px; }
+        .sidebar { width: 260px; background: #111; border-right: 1px solid #222; padding: 16px; display: flex; flex-direction: column; user-select: none; position: relative; }
+        .room-tag { font-size: 11px; color: #666; text-transform: uppercase; margin-bottom: 6px; margin-top: 12px; font-weight: bold; }
         .room-tag:first-child { margin-top: 0; }
-        .room-title { font-size: 16px; font-weight: 600; color: #fff; padding: 10px; background: #1a1a1a; border-radius: 6px; border-left: 3px solid #fff; margin-bottom: 12px; }
+        .room-title { font-size: 15px; font-weight: 600; color: #fff; padding: 8px 10px; background: #1a1a1a; border-radius: 6px; border-left: 3px solid #fff; margin-bottom: 8px; }
         
         /* Oda Listeleri Stili */
-        .room-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
-        .room-item { padding: 8px 12px; background: #161616; border: 1px solid #222; border-radius: 6px; font-size: 13px; color: #aaa; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; }
+        .room-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 6px; }
+        .room-item { padding: 8px 10px; background: #161616; border: 1px solid #222; border-radius: 6px; font-size: 13px; color: #aaa; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; }
         .room-item:hover { background: #222; color: #fff; }
         .room-item.active { background: #262626; color: #fff; border-color: #444; font-weight: 600; }
         
         /* Ses Kanalı Kullanıcı Listesi */
-        .voice-room-users { margin-top: 6px; padding-left: 12px; display: flex; flex-direction: column; gap: 4px; }
+        .voice-room-users { margin-top: 4px; padding-left: 10px; display: flex; flex-direction: column; gap: 3px; }
         .voice-user-tag { font-size: 11px; color: #10b981; display: flex; align-items: center; gap: 6px; }
         .voice-user-tag::before { content: "•"; color: #10b981; font-size: 14px; }
 
-        /* Ses Kontrol Alanı */
-        .voice-box { background: #161616; border: 1px solid #262626; padding: 12px; border-radius: 8px; margin-bottom: 12px; margin-top: 8px; }
-        .voice-btn { width: 100%; padding: 10px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; margin-bottom: 8px; transition: 0.2s; }
-        .btn-disconnect { background: #ef4444; color: #fff; display: none; }
-        .btn-mute { background: #333; color: #fff; display: none; }
-        .btn-deafen { background: #333; color: #fff; display: none; }
-        .btn-screen { background: #3b82f6; color: #fff; display: none; }
-
-        .voice-status { display: none; align-items: center; justify-content: space-between; background: #0f1f17; border: 1px solid #10b981; padding: 8px 12px; border-radius: 6px; margin-bottom: 10px; font-size: 12px; color: #10b981; }
-        .voice-status-left { display: flex; align-items: center; gap: 6px; font-weight: 600; }
-        .voice-dot { width: 8px; height: 8px; background-color: #10b981; border-radius: 50%; animation: pulse 1.5s infinite; }
-        .voice-timer { font-family: monospace; font-size: 13px; font-weight: bold; color: #a7f3d0; }
-
-        @keyframes pulse {
-            0% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(0.85); }
-            100% { opacity: 1; transform: scale(1); }
-        }
-
-        .online-list { flex: 1; overflow-y: auto; }
+        .online-list { flex: 1; overflow-y: auto; margin-bottom: 80px; }
         
         /* Kullanıcı Öğe Stili ve Konuşma Işığı */
-        .user-item { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; padding: 8px; border-radius: 6px; transition: all 0.2s ease; cursor: context-menu; }
+        .user-item { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; padding: 6px 8px; border-radius: 6px; transition: all 0.2s ease; cursor: context-menu; }
         .user-item:hover { background: #1a1a1a; }
         .status-dot { width: 8px; height: 8px; background-color: #444; border-radius: 50%; transition: all 0.2s ease; }
         
@@ -69,6 +52,109 @@
             box-shadow: 0 0 8px #10b981;
         }
 
+        /* DISCORD TARZI SOL ALT KONTROL PANELİ */
+        .user-control-panel {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #141414;
+            border-top: 1px solid #222;
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .voice-connected-info {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            background: #0f1f17;
+            border: 1px solid #10b981;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            color: #10b981;
+        }
+        .voice-connected-info .v-info-left { display: flex; align-items: center; gap: 6px; font-weight: 600; }
+        .voice-dot { width: 6px; height: 6px; background-color: #10b981; border-radius: 50%; animation: pulse 1.5s infinite; }
+
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .panel-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            overflow: hidden;
+        }
+        .user-badge .avatar {
+            width: 28px;
+            height: 28px;
+            background: #262626;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: #fff;
+            flex-shrink: 0;
+        }
+        .user-badge .username-text {
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 90px;
+        }
+
+        /* Küçük İkon Butonları */
+        .icon-actions {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .icon-btn {
+            background: transparent;
+            border: none;
+            color: #b9bbbe;
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.15s ease;
+        }
+        .icon-btn:hover {
+            background: #262626;
+            color: #fff;
+        }
+        .icon-btn.active-danger {
+            color: #ef4444;
+        }
+        .icon-btn.active-danger:hover {
+            background: rgba(239, 68, 68, 0.15);
+        }
+        .icon-btn.btn-disconnect {
+            color: #ef4444;
+            display: none;
+        }
+
         /* Ana Yayın & Chat Alanı */
         .chat-main { flex: 1; display: flex; flex-direction: column; background: #0d0d0d; position: relative; }
         
@@ -77,7 +163,6 @@
         .video-box { position: relative; width: 100%; max-width: 800px; background: #111; border-radius: 8px; overflow: hidden; border: 1px solid #333; display: flex; flex-direction: column; }
         .video-box video { width: 100%; height: auto; max-height: 50vh; display: block; background: #000; object-fit: contain; }
         
-        /* Video Kontrol Barı */
         .video-controls { display: flex; align-items: center; justify-content: space-between; background: rgba(15, 15, 15, 0.95); padding: 8px 12px; border-top: 1px solid #222; }
         .video-label { font-size: 12px; color: #fff; font-weight: 600; }
         .video-actions { display: flex; align-items: center; gap: 12px; }
@@ -162,23 +247,32 @@
                 </div>
             </div>
 
-            <div class="voice-box">
-                <div id="voice-status" class="voice-status">
-                    <div class="voice-status-left">
-                        <div class="voice-dot"></div>
-                        <span id="voice-channel-name">Ses Bağlandı</span>
-                    </div>
-                    <div id="voice-timer" class="voice-timer">00:00</div>
-                </div>
-
-                <button id="mute-voice-btn" class="voice-btn btn-mute">Sustur</button>
-                <button id="deafen-voice-btn" class="voice-btn btn-deafen">Sağırlaştır</button>
-                <button id="screen-share-btn" class="voice-btn btn-screen">Ekran Paylaş</button>
-                <button id="leave-voice-btn" class="voice-btn btn-disconnect">Sesten Ayrıl</button>
-            </div>
-
             <div class="room-tag">Çevrim İçi</div>
             <div class="online-list" id="user-list"></div>
+
+            <!-- DISCORD YARATILIŞINDA SOL ALT KONTROL PANELİ -->
+            <div class="user-control-panel">
+                <div id="voice-status-box" class="voice-connected-info">
+                    <div class="v-info-left">
+                        <div class="voice-dot"></div>
+                        <span id="voice-channel-name">Sesli Kanal</span>
+                    </div>
+                    <span id="voice-timer" style="font-family: monospace; font-size: 11px;">00:00</span>
+                </div>
+
+                <div class="panel-footer">
+                    <div class="user-badge">
+                        <div id="user-avatar" class="avatar">U</div>
+                        <span id="panel-username" class="username-text">Kullanıcı</span>
+                    </div>
+                    <div class="icon-actions">
+                        <button id="mute-voice-btn" class="icon-btn" title="Mikrofonu Sustur"><i class="fa-solid fa-microphone"></i></button>
+                        <button id="deafen-voice-btn" class="icon-btn" title="Kulaklığı Kapat"><i class="fa-solid fa-headphones"></i></button>
+                        <button id="screen-share-btn" class="icon-btn" title="Ekran Paylaş"><i class="fa-solid fa-desktop"></i></button>
+                        <button id="leave-voice-btn" class="icon-btn btn-disconnect" title="Sesten Ayrıl"><i class="fa-solid fa-phone-slash"></i></button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="chat-main">
@@ -228,11 +322,14 @@
         const muteVoiceBtn = document.getElementById('mute-voice-btn');
         const deafenVoiceBtn = document.getElementById('deafen-voice-btn');
         const screenShareBtn = document.getElementById('screen-share-btn');
-        const voiceStatus = document.getElementById('voice-status');
+        const voiceStatusBox = document.getElementById('voice-status-box');
         const voiceTimer = document.getElementById('voice-timer');
         const voiceChannelName = document.getElementById('voice-channel-name');
         const audioContainer = document.getElementById('audio-container');
         const videoGrid = document.getElementById('video-grid');
+
+        const panelUsername = document.getElementById('panel-username');
+        const userAvatar = document.getElementById('user-avatar');
 
         const contextMenu = document.getElementById('context-menu');
         const menuUserTitle = document.getElementById('menu-user-title');
@@ -303,6 +400,11 @@
 
             if (username && password) {
                 currentUser = username;
+                panelUsername.innerText = username;
+                panelUsername.style.color = selectedColor;
+                userAvatar.innerText = username.charAt(0).toUpperCase();
+                userAvatar.style.backgroundColor = selectedColor;
+
                 socket.emit('joinRoom', { username, password, color: selectedColor, room: currentRoom });
             }
         });
@@ -487,11 +589,8 @@
                 currentVoiceChannel = channelName;
                 voiceChannelName.innerText = channelName;
 
-                leaveVoiceBtn.style.display = 'block';
-                muteVoiceBtn.style.display = 'block';
-                deafenVoiceBtn.style.display = 'block';
-                screenShareBtn.style.display = 'block';
-                voiceStatus.style.display = 'flex';
+                leaveVoiceBtn.style.display = 'flex';
+                voiceStatusBox.style.display = 'flex';
 
                 playBeep(880, 'triangle', 0.15);
                 startTimer();
@@ -522,10 +621,7 @@
             videoGrid.style.display = 'none';
 
             leaveVoiceBtn.style.display = 'none';
-            muteVoiceBtn.style.display = 'none';
-            deafenVoiceBtn.style.display = 'none';
-            screenShareBtn.style.display = 'none';
-            voiceStatus.style.display = 'none';
+            voiceStatusBox.style.display = 'none';
 
             if (resetMedia) {
                 playBeep(330, 'triangle', 0.2);
@@ -542,7 +638,6 @@
             leaveVoiceChannel(true);
         });
 
-        // Ses Odasındaki Kullanıcı Listesini Güncelleme
         socket.on('updateVoiceState', (channelsState) => {
             document.querySelectorAll('.voice-room-users').forEach(el => el.innerHTML = '');
 
@@ -577,8 +672,7 @@
                         videoTrack.contentHint = 'motion';
                     }
 
-                    screenShareBtn.innerText = "Yayını Durdur";
-                    screenShareBtn.style.background = "#ef4444";
+                    screenShareBtn.classList.add('active-danger');
 
                     addVideoBox('my-screen', screenStream, `${currentUser} (Ekranınız)`);
 
@@ -633,8 +727,7 @@
                 }
             }
 
-            screenShareBtn.innerText = "Ekran Paylaş";
-            screenShareBtn.style.background = "#3b82f6";
+            screenShareBtn.classList.remove('active-danger');
 
             const myBox = document.getElementById('video-box-my-screen');
             if (myBox) myBox.remove();
@@ -653,15 +746,25 @@
             if (localStream) {
                 isMuted = !isMuted;
                 localStream.getAudioTracks()[0].enabled = !isMuted;
-                muteVoiceBtn.innerText = isMuted ? "Sesi Aç" : "Sustur";
-                muteVoiceBtn.style.background = isMuted ? "#ef4444" : "#333";
+                if (isMuted) {
+                    muteVoiceBtn.innerHTML = `<i class="fa-solid fa-microphone-slash"></i>`;
+                    muteVoiceBtn.classList.add('active-danger');
+                } else {
+                    muteVoiceBtn.innerHTML = `<i class="fa-solid fa-microphone"></i>`;
+                    muteVoiceBtn.classList.remove('active-danger');
+                }
             }
         });
 
         deafenVoiceBtn.addEventListener('click', () => {
             isDeafened = !isDeafened;
-            deafenVoiceBtn.innerText = isDeafened ? "Kulaklık Aç" : "Sağırlaştır";
-            deafenVoiceBtn.style.background = isDeafened ? "#ef4444" : "#333";
+            if (isDeafened) {
+                deafenVoiceBtn.innerHTML = `<i class="fa-solid fa-ear-deaf"></i>`;
+                deafenVoiceBtn.classList.add('active-danger');
+            } else {
+                deafenVoiceBtn.innerHTML = `<i class="fa-solid fa-headphones"></i>`;
+                deafenVoiceBtn.classList.remove('active-danger');
+            }
 
             const audioElements = audioContainer.querySelectorAll('audio');
             audioElements.forEach(audio => { audio.muted = isDeafened; });
