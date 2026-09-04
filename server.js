@@ -21,7 +21,7 @@ const voiceChannels = {
     "Sesli - Oyun": { users: [], seconds: 0, timer: null }
 };
 
-// Sesli kanal verisini istemcilere göndermek için basitleştirme fonksiyonu
+// Tüm ses kanallarının durumunu paketleyen yardımcı fonksiyon
 function getVoiceStateData() {
     const state = {};
     for (let channel in voiceChannels) {
@@ -42,8 +42,7 @@ function startChannelTimer(channelName) {
     if (channel && !channel.timer) {
         channel.timer = setInterval(() => {
             channel.seconds++;
-            // Oda zamanını belirli aralıklarla veya doğrudan yayınla
-            io.to(channelName).emit('voiceTimerUpdate', { channel: channelName, seconds: channel.seconds });
+            io.emit('voiceTimerUpdate', { channel: channelName, seconds: channel.seconds });
         }, 1000);
     }
 }
@@ -56,7 +55,7 @@ function stopAndResetChannelTimer(channelName) {
             channel.timer = null;
         }
         channel.seconds = 0;
-        io.to(channelName).emit('voiceTimerUpdate', { channel: channelName, seconds: 0 });
+        io.emit('voiceTimerUpdate', { channel: channelName, seconds: 0 });
     }
 }
 
@@ -160,12 +159,13 @@ io.on('connection', (socket) => {
             voiceChannels[channelName] = { users: [], seconds: 0, timer: null };
         }
 
-        // Eğer ilk kullanıcı girdiyse sayacı başlat
-        if (voiceChannels[channelName].users.length === 0) {
+        // Kullanıcıyı odaya ekle
+        voiceChannels[channelName].users.push({ id: socket.id, username: userInfo.username, color: userInfo.color });
+
+        // İlk kullanıcı girdiyse sayacı başlat
+        if (voiceChannels[channelName].users.length === 1) {
             startChannelTimer(channelName);
         }
-
-        voiceChannels[channelName].users.push({ id: socket.id, username: userInfo.username });
 
         socket.to(channelName).emit('userJoinedVoice', socket.id);
         broadcastVoiceState();
@@ -177,16 +177,17 @@ io.on('connection', (socket) => {
             userInfo.voiceChannel = null;
         }
 
-        socket.leave(channelName);
-        if (voiceChannels[channelName]) {
-            voiceChannels[channelName].users = voiceChannels[channelName].users.filter(u => u.id !== socket.id);
-            // Eğer odada kimse kalmadıysa sayacı sıfırla ve durdur
-            if (voiceChannels[channelName].users.length === 0) {
-                stopAndResetChannelTimer(channelName);
+        if (channelName) {
+            socket.leave(channelName);
+            if (voiceChannels[channelName]) {
+                voiceChannels[channelName].users = voiceChannels[channelName].users.filter(u => u.id !== socket.id);
+                if (voiceChannels[channelName].users.length === 0) {
+                    stopAndResetChannelTimer(channelName);
+                }
             }
+            socket.to(channelName).emit('userLeftVoice', socket.id);
         }
 
-        socket.to(channelName).emit('userLeftVoice', socket.id);
         broadcastVoiceState();
     });
 
