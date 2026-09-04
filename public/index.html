@@ -177,7 +177,7 @@
         .msg-meta { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 4px; font-size: 11px; }
         .msg-user { font-weight: 600; }
         .msg-time { color: #555; }
-        .msg-text { font-size: 14px; color: #dddddd; }
+        .msg-text { font-size: 14px; color: #dddddd; word-break: break-word; }
 
         .typing-indicator { height: 18px; font-size: 11px; color: #888; padding: 0 24px; font-style: italic; }
 
@@ -250,7 +250,6 @@
             <div class="room-tag">Çevrim İçi</div>
             <div class="online-list" id="user-list"></div>
 
-            <!-- DISCORD YARATILIŞINDA SOL ALT KONTROL PANELİ -->
             <div class="user-control-panel">
                 <div id="voice-status-box" class="voice-connected-info">
                     <div class="v-info-left">
@@ -276,7 +275,6 @@
         </div>
 
         <div class="chat-main">
-            <!-- Ekran Paylaşımı Alanı -->
             <div id="video-grid"></div>
 
             <div class="messages-area" id="messages"></div>
@@ -290,7 +288,6 @@
         </div>
     </div>
 
-    <!-- Sağ Tık Özel Menüsü -->
     <div id="context-menu">
         <h4 id="menu-user-title">Kullanıcı</h4>
         <label>Ses Seviyesi: <span id="vol-value">100%</span></label>
@@ -363,6 +360,18 @@
                 { urls: 'stun:stun2.l.google.com:19302' }
             ] 
         };
+
+        function escapeHTML(str) {
+            return String(str).replace(/[&<>"']/g, function(m) {
+                return {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                }[m];
+            });
+        }
 
         function playBeep(freq = 440, type = 'sine', duration = 0.1) {
             try {
@@ -442,9 +451,15 @@
             const msg = document.createElement('div');
             msg.classList.add('msg');
             if (isMe) msg.classList.add('me');
+            
+            const safeUser = escapeHTML(data.user);
+            const safeText = escapeHTML(data.text);
+            const safeColor = escapeHTML(data.color);
+            const safeTime = escapeHTML(data.time);
+
             msg.innerHTML = `
-                <div class="msg-meta"><span class="msg-user" style="color:${data.color}">${data.user}</span><span class="msg-time">${data.time}</span></div>
-                <div class="msg-text">${data.text}</div>
+                <div class="msg-meta"><span class="msg-user" style="color:${safeColor}">${safeUser}</span><span class="msg-time">${safeTime}</span></div>
+                <div class="msg-text">${safeText}</div>
             `;
             messagesDiv.appendChild(msg);
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
@@ -464,7 +479,11 @@
                 const item = document.createElement('div');
                 item.classList.add('user-item');
                 item.id = `user-item-${u.id}`;
-                item.innerHTML = `<div class="status-dot"></div><span style="color:${u.color}">${u.username}</span>`;
+                
+                const safeName = escapeHTML(u.username);
+                const safeColor = escapeHTML(u.color);
+
+                item.innerHTML = `<div class="status-dot"></div><span style="color:${safeColor}">${safeName}</span>`;
                 
                 item.addEventListener('contextmenu', (e) => {
                     e.preventDefault();
@@ -569,7 +588,6 @@
             }
         });
 
-        // SESLİ KANAL KATILMA / DEĞİŞTİRME
         async function joinVoiceChannel(channelName) {
             if (currentVoiceChannel === channelName) return;
 
@@ -682,14 +700,6 @@
                             screenSenders[id] = sender;
                         });
 
-                        const videoSender = peers[id].getSenders().find(s => s.track && s.track.kind === 'video');
-                        if (videoSender && videoSender.setParameters) {
-                            const params = videoSender.getParameters();
-                            if (!params.encodings) params.encodings = [{}];
-                            params.encodings[0].maxBitrate = 3000000;
-                            videoSender.setParameters(params).catch(() => {});
-                        }
-
                         const offer = await peers[id].createOffer();
                         await peers[id].setLocalDescription(offer);
                         socket.emit('signal', { to: id, signal: offer });
@@ -721,9 +731,11 @@
                     } catch(e) {}
                     delete screenSenders[id];
 
-                    const offer = await peers[id].createOffer();
-                    await peers[id].setLocalDescription(offer);
-                    socket.emit('signal', { to: id, signal: offer });
+                    try {
+                        const offer = await peers[id].createOffer();
+                        await peers[id].setLocalDescription(offer);
+                        socket.emit('signal', { to: id, signal: offer });
+                    } catch(e) {}
                 }
             }
 
@@ -780,7 +792,9 @@
         socket.on('userJoinedVoice', async (id) => {
             const peer = createPeer(id);
             peers[id] = peer;
-            localStream.getTracks().forEach(track => peer.addTrack(track, localStream));
+            if (localStream) {
+                localStream.getTracks().forEach(track => peer.addTrack(track, localStream));
+            }
             
             if (screenStream) {
                 screenStream.getTracks().forEach(track => {
