@@ -16,7 +16,6 @@ app.get('/', (req, res) => {
 });
 
 const users = {};
-// Hangi sesli kanalda kimlerin olduğunu tutacak obje
 const voiceChannels = {
     "Sesli - Genel": [],
     "Sesli - Oyun": []
@@ -102,12 +101,10 @@ io.on('connection', (socket) => {
         }
     });
 
-    // --- ÇOKLU SES KANALI MİMARİSİ ---
     socket.on('joinVoiceChannel', (channelName) => {
         const userInfo = users[socket.id];
         if (!userInfo) return;
 
-        // Eski kanaldan çıkış yap
         if (userInfo.voiceChannel) {
             socket.leave(userInfo.voiceChannel);
             if (voiceChannels[userInfo.voiceChannel]) {
@@ -116,7 +113,6 @@ io.on('connection', (socket) => {
             socket.to(userInfo.voiceChannel).emit('userLeftVoice', socket.id);
         }
 
-        // Yeni kanala giriş yap
         userInfo.voiceChannel = channelName;
         socket.join(channelName);
 
@@ -125,7 +121,6 @@ io.on('connection', (socket) => {
         }
         voiceChannels[channelName].push({ id: socket.id, username: userInfo.username });
 
-        // Sadece o kanaldaki diğer kullanıcılara bağlandığını bildir
         socket.to(channelName).emit('userJoinedVoice', socket.id);
         broadcastVoiceState();
     });
