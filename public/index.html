@@ -19,15 +19,23 @@
         /* Ana Sohbet Ekranı */
         #chat-container { display: none; width: 100%; height: 100vh; }
         .sidebar { width: 260px; background: #111; border-right: 1px solid #222; padding: 24px 16px; display: flex; flex-direction: column; user-select: none; }
-        .room-tag { font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 12px; }
-        .room-title { font-size: 16px; font-weight: 600; color: #fff; padding: 10px; background: #1a1a1a; border-radius: 6px; border-left: 3px solid #fff; margin-bottom: 20px; }
+        .room-tag { font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 8px; margin-top: 12px; }
+        .room-tag:first-child { margin-top: 0; }
+        .room-title { font-size: 16px; font-weight: 600; color: #fff; padding: 10px; background: #1a1a1a; border-radius: 6px; border-left: 3px solid #fff; margin-bottom: 12px; }
         
+        /* Oda Listesi Stili */
+        .room-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+        .room-item { padding: 8px 12px; background: #161616; border: 1px solid #222; border-radius: 6px; font-size: 13px; color: #aaa; cursor: pointer; transition: 0.2s; }
+        .room-item:hover { background: #222; color: #fff; }
+        .room-item.active { background: #262626; color: #fff; border-color: #444; font-weight: 600; }
+
         /* Ses Kontrol Alanı */
-        .voice-box { background: #161616; border: 1px solid #262626; padding: 12px; border-radius: 8px; margin-bottom: 20px; }
+        .voice-box { background: #161616; border: 1px solid #262626; padding: 12px; border-radius: 8px; margin-bottom: 12px; }
         .voice-btn { width: 100%; padding: 10px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; margin-bottom: 8px; transition: 0.2s; }
         .btn-connect { background: #10b981; color: #000; }
         .btn-disconnect { background: #ef4444; color: #fff; display: none; }
         .btn-mute { background: #333; color: #fff; display: none; }
+        .btn-deafen { background: #333; color: #fff; display: none; }
         .btn-screen { background: #3b82f6; color: #fff; display: none; }
 
         .voice-status { display: none; align-items: center; justify-content: space-between; background: #0f1f17; border: 1px solid #10b981; padding: 8px 12px; border-radius: 6px; margin-bottom: 10px; font-size: 12px; color: #10b981; }
@@ -129,8 +137,15 @@
     <div id="chat-container">
         <div class="sidebar">
             <div class="room-tag">Aktif Oda</div>
-            <div class="room-title"># Özel Kanal</div>
+            <div id="active-room-title" class="room-title"># Genel</div>
             
+            <div class="room-tag">Sohbet Odaları</div>
+            <div class="room-list">
+                <div class="room-item active" onclick="switchRoom('Genel')"># Genel</div>
+                <div class="room-item" onclick="switchRoom('Oyun')"># Oyun</div>
+                <div class="room-item" onclick="switchRoom('Müzik')"># Müzik</div>
+            </div>
+
             <div class="room-tag">Sesli Kanal</div>
             <div class="voice-box">
                 <div id="voice-status" class="voice-status">
@@ -143,6 +158,7 @@
 
                 <button id="join-voice-btn" class="voice-btn btn-connect">Sese Katıl</button>
                 <button id="mute-voice-btn" class="voice-btn btn-mute">Sustur</button>
+                <button id="deafen-voice-btn" class="voice-btn btn-deafen">Sağırlaştır</button>
                 <button id="screen-share-btn" class="voice-btn btn-screen">Ekran Paylaş</button>
                 <button id="leave-voice-btn" class="voice-btn btn-disconnect">Ayrıl</button>
             </div>
@@ -192,10 +208,12 @@
         const messagesDiv = document.getElementById('messages');
         const userListDiv = document.getElementById('user-list');
         const typingBox = document.getElementById('typing-box');
+        const activeRoomTitle = document.getElementById('active-room-title');
 
         const joinVoiceBtn = document.getElementById('join-voice-btn');
         const leaveVoiceBtn = document.getElementById('leave-voice-btn');
         const muteVoiceBtn = document.getElementById('mute-voice-btn');
+        const deafenVoiceBtn = document.getElementById('deafen-voice-btn');
         const screenShareBtn = document.getElementById('screen-share-btn');
         const voiceStatus = document.getElementById('voice-status');
         const voiceTimer = document.getElementById('voice-timer');
@@ -209,11 +227,13 @@
 
         let currentUser = "";
         let selectedColor = "#3b82f6";
+        let currentRoom = "Genel";
         let localStream = null;
         let screenStream = null;
         let screenSenders = {};
         let peers = {};
         let isMuted = false;
+        let isDeafened = false;
         let timerInterval = null;
         let secondsConnected = 0;
         let audioContext = null;
@@ -247,6 +267,19 @@
             } catch(e) {}
         }
 
+        function switchRoom(roomName) {
+            if (currentRoom === roomName) return;
+
+            document.querySelectorAll('.room-item').forEach(el => {
+                el.classList.toggle('active', el.textContent.includes(roomName));
+            });
+
+            currentRoom = roomName;
+            activeRoomTitle.innerText = `# ${roomName}`;
+            messagesDiv.innerHTML = '';
+            socket.emit('switchRoom', roomName);
+        }
+
         joinBtn.addEventListener('click', () => {
             const username = usernameInput.value.trim();
             const password = passwordInput.value.trim();
@@ -254,7 +287,7 @@
 
             if (username && password) {
                 currentUser = username;
-                socket.emit('joinRoom', { username, password, color: selectedColor });
+                socket.emit('joinRoom', { username, password, color: selectedColor, room: currentRoom });
             }
         });
 
@@ -279,7 +312,7 @@
         form.addEventListener('submit', (e) => {
             e.preventDefault();
             if (input.value.trim()) {
-                socket.emit('chatMessage', { text: input.value });
+                socket.emit('chatMessage', { text: input.value, room: currentRoom });
                 socket.emit('typing', false);
                 input.value = '';
             }
@@ -428,6 +461,7 @@
                 joinVoiceBtn.style.display = 'none';
                 leaveVoiceBtn.style.display = 'block';
                 muteVoiceBtn.style.display = 'block';
+                deafenVoiceBtn.style.display = 'block';
                 screenShareBtn.style.display = 'block';
                 voiceStatus.style.display = 'flex';
 
@@ -440,7 +474,6 @@
             }
         });
 
-        // OPTİMİZE EDİLMİŞ EKRAN PAYLAŞIMI (Gecikmesiz & 1080p/720p 30FPS)
         screenShareBtn.addEventListener('click', async () => {
             if (!screenStream) {
                 try {
@@ -454,7 +487,6 @@
                         audio: true 
                     });
 
-                    // Akıcılık için video track ayarlamaları
                     const videoTrack = screenStream.getVideoTracks()[0];
                     if (videoTrack.contentHint !== undefined) {
                         videoTrack.contentHint = 'motion';
@@ -465,19 +497,17 @@
 
                     addVideoBox('my-screen', screenStream, `${currentUser} (Ekranınız)`);
 
-                    // Stream izlerini peer bağlantılarına ekle
                     for (let id in peers) {
                         screenStream.getTracks().forEach(track => {
                             const sender = peers[id].addTrack(track, screenStream);
                             screenSenders[id] = sender;
                         });
 
-                        // Bant genişliğini/Kaliteyi optimize et
                         const videoSender = peers[id].getSenders().find(s => s.track && s.track.kind === 'video');
                         if (videoSender && videoSender.setParameters) {
                             const params = videoSender.getParameters();
                             if (!params.encodings) params.encodings = [{}];
-                            params.encodings[0].maxBitrate = 3000000; // Max 3 Mbps (akıcı görüntü için)
+                            params.encodings[0].maxBitrate = 3000000;
                             videoSender.setParameters(params).catch(() => {});
                         }
 
@@ -539,7 +569,26 @@
                 isMuted = !isMuted;
                 localStream.getAudioTracks()[0].enabled = !isMuted;
                 muteVoiceBtn.innerText = isMuted ? "Sesi Aç" : "Sustur";
+                muteVoiceBtn.style.background = isMuted ? "#ef4444" : "#333";
             }
+        });
+
+        deafenVoiceBtn.addEventListener('click', () => {
+            isDeafened = !isDeafened;
+            deafenVoiceBtn.innerText = isDeafened ? "Kulaklık Aç" : "Sağırlaştır";
+            deafenVoiceBtn.style.background = isDeafened ? "#ef4444" : "#333";
+
+            // Tüm gelen ses kanallarını kapat / aç
+            const audioElements = audioContainer.querySelectorAll('audio');
+            audioElements.forEach(audio => { audio.muted = isDeafened; });
+
+            // Yayın videolarının sesini kapat / aç
+            const videoElements = videoGrid.querySelectorAll('video');
+            videoElements.forEach(video => {
+                if (video.parentElement.id !== 'video-box-my-screen') {
+                    video.muted = isDeafened;
+                }
+            });
         });
 
         leaveVoiceBtn.addEventListener('click', () => {
@@ -563,6 +612,7 @@
             joinVoiceBtn.style.display = 'block';
             leaveVoiceBtn.style.display = 'none';
             muteVoiceBtn.style.display = 'none';
+            deafenVoiceBtn.style.display = 'none';
             screenShareBtn.style.display = 'none';
             voiceStatus.style.display = 'none';
 
@@ -644,6 +694,7 @@
                         audio.id = `audio-${id}`;
                         audio.autoplay = true;
                         audio.playsInline = true;
+                        audio.muted = isDeafened;
                         audioContainer.appendChild(audio);
                     }
                     audio.srcObject = e.streams[0];
@@ -685,7 +736,7 @@
                     videoElem.muted = true;
                     volInput.disabled = true;
                 } else {
-                    videoElem.muted = false;
+                    videoElem.muted = isDeafened;
                 }
 
                 volInput.addEventListener('input', (e) => {
