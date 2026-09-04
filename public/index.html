@@ -32,12 +32,12 @@
         .room-item.active { background: #262626; color: #fff; border-color: #444; font-weight: 600; }
         
         .voice-room-header { display: flex; align-items: center; justify-content: space-between; width: 100%; }
-        .voice-channel-timer { font-size: 11px; font-family: monospace; color: #10b981; background: rgba(16, 185, 129, 0.1); padding: 2px 6px; border-radius: 4px; display: none; }
+        .voice-channel-timer { font-size: 11px; font-family: monospace; color: #10b981; background: rgba(16, 185, 129, 0.15); padding: 2px 6px; border-radius: 4px; display: none; font-weight: bold; }
 
         /* Ses Kanalı Kullanıcı Listesi */
-        .voice-room-users { margin-top: 4px; padding-left: 10px; display: flex; flex-direction: column; gap: 3px; }
-        .voice-user-tag { font-size: 11px; color: #10b981; display: flex; align-items: center; gap: 6px; }
-        .voice-user-tag::before { content: "•"; color: #10b981; font-size: 14px; }
+        .voice-room-users { margin-top: 6px; padding-left: 8px; display: flex; flex-direction: column; gap: 4px; }
+        .voice-user-tag { font-size: 12px; color: #10b981; display: flex; align-items: center; gap: 6px; font-weight: 500; }
+        .voice-user-tag::before { content: "•"; color: #10b981; font-size: 16px; }
 
         .online-list { flex: 1; overflow-y: auto; margin-bottom: 80px; }
         
@@ -55,7 +55,7 @@
             box-shadow: 0 0 8px #10b981;
         }
 
-        /* DISCORD TARZI SOL ALT KONTROL PANELİ */
+        /* SOL ALT KONTROL PANELİ */
         .user-control-panel {
             position: absolute;
             bottom: 0;
@@ -123,7 +123,7 @@
             max-width: 90px;
         }
 
-        /* Küçük İkon Butonları */
+        /* İkon Butonları */
         .icon-actions {
             display: flex;
             align-items: center;
@@ -161,7 +161,6 @@
         /* Ana Yayın & Chat Alanı */
         .chat-main { flex: 1; display: flex; flex-direction: column; background: #0d0d0d; position: relative; }
         
-        /* Ekran Paylaşımı Video Alanı */
         #video-grid { display: none; padding: 16px; background: #000; gap: 12px; flex-wrap: wrap; justify-content: center; align-items: center; max-height: 60vh; overflow-y: auto; border-bottom: 1px solid #222; }
         .video-box { position: relative; width: 100%; max-width: 800px; background: #111; border-radius: 8px; overflow: hidden; border: 1px solid #333; display: flex; flex-direction: column; }
         .video-box video { width: 100%; height: auto; max-height: 50vh; display: block; background: #000; object-fit: contain; }
@@ -243,23 +242,23 @@
                 <div class="room-item voice-room" onclick="joinVoiceChannel('Sesli - Genel')">
                     <div class="voice-room-header">
                         <span>🔊 Sesli - Genel</span>
-                        <span id="vtimer-Sesli - Genel" class="voice-channel-timer">00:00</span>
+                        <span id="vtimer-Sesli_Genel" class="voice-channel-timer">00:00</span>
                     </div>
-                    <div id="vusers-Sesli - Genel" class="voice-room-users"></div>
+                    <div id="vusers-Sesli_Genel" class="voice-room-users"></div>
                 </div>
                 <div class="room-item voice-room" onclick="joinVoiceChannel('Sesli - Oyun')">
                     <div class="voice-room-header">
                         <span>🔊 Sesli - Oyun</span>
-                        <span id="vtimer-Sesli - Oyun" class="voice-channel-timer">00:00</span>
+                        <span id="vtimer-Sesli_Oyun" class="voice-channel-timer">00:00</span>
                     </div>
-                    <div id="vusers-Sesli - Oyun" class="voice-room-users"></div>
+                    <div id="vusers-Sesli_Oyun" class="voice-room-users"></div>
                 </div>
             </div>
 
             <div class="room-tag">Çevrim İçi</div>
             <div class="online-list" id="user-list"></div>
 
-            <!-- DISCORD YARATILIŞINDA SOL ALT KONTROL PANELİ -->
+            <!-- KONTROL PANELİ -->
             <div class="user-control-panel">
                 <div id="voice-status-box" class="voice-connected-info">
                     <div class="v-info-left">
@@ -285,7 +284,6 @@
         </div>
 
         <div class="chat-main">
-            <!-- Ekran Paylaşımı Alanı -->
             <div id="video-grid"></div>
 
             <div class="messages-area" id="messages"></div>
@@ -375,6 +373,11 @@
             const mins = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
             const secs = (totalSeconds % 60).toString().padStart(2, '0');
             return `${mins}:${secs}`;
+        }
+
+        // Kanal isimlerindeki boşlukları HTML ID için güvenli hale getirme
+        function safeId(str) {
+            return str.replace(/[^a-zA-Z0-9]/g, '_');
         }
 
         function playBeep(freq = 440, type = 'sine', duration = 0.1) {
@@ -631,12 +634,12 @@
             leaveVoiceChannel(true);
         });
 
-        // Sunucudan gelen canlı kanal süresi güncellemesi
+        // Canlı Sayaç Güncellemesi
         socket.on('voiceTimerUpdate', (data) => {
             const formatted = formatTime(data.seconds);
+            const safeChannel = safeId(data.channel);
             
-            // Oda başlığının yanındaki zamanı güncelle
-            const channelTimerElem = document.getElementById(`vtimer-${data.channel}`);
+            const channelTimerElem = document.getElementById(`vtimer-${safeChannel}`);
             if (channelTimerElem) {
                 if (data.seconds > 0) {
                     channelTimerElem.innerText = formatted;
@@ -647,19 +650,20 @@
                 }
             }
 
-            // Eğer şu an bağlı olduğumuz kanal güncelleniyorsa, sol alt paneli de güncelle
             if (currentVoiceChannel === data.channel) {
                 voiceTimer.innerText = formatted;
             }
         });
 
+        // Ses Kanallarındaki Kullanıcılar ve Sayaçların Genel Durumu
         socket.on('updateVoiceState', (channelsState) => {
             document.querySelectorAll('.voice-room-users').forEach(el => el.innerHTML = '');
 
             for (let channel in channelsState) {
                 const channelData = channelsState[channel];
-                const targetDiv = document.getElementById(`vusers-${channel}`);
-                const timerElem = document.getElementById(`vtimer-${channel}`);
+                const safeChannel = safeId(channel);
+                const targetDiv = document.getElementById(`vusers-${safeChannel}`);
+                const timerElem = document.getElementById(`vtimer-${safeChannel}`);
 
                 if (timerElem) {
                     if (channelData.seconds > 0) {
@@ -676,6 +680,7 @@
                         const tag = document.createElement('div');
                         tag.classList.add('voice-user-tag');
                         tag.innerText = user.username;
+                        if (user.color) tag.style.color = user.color;
                         targetDiv.appendChild(tag);
                     });
                 }
