@@ -31,6 +31,10 @@
         .room-item:hover { background: #222; color: #fff; }
         .room-item.active { background: #262626; color: #fff; border-color: #444; font-weight: 600; }
         
+        /* Ses Odası Başlık & Sayaç Yapısı */
+        .voice-room-header { display: flex; align-items: center; justify-content: space-between; width: 100%; }
+        .voice-room-timer { font-family: monospace; font-size: 11px; color: #10b981; background: rgba(16, 185, 129, 0.1); padding: 2px 6px; border-radius: 4px; display: none; }
+        
         /* Ses Kanalı Kullanıcı Listesi */
         .voice-room-users { margin-top: 4px; padding-left: 10px; display: flex; flex-direction: column; gap: 3px; }
         .voice-user-tag { font-size: 11px; color: #10b981; display: flex; align-items: center; gap: 6px; }
@@ -52,7 +56,7 @@
             box-shadow: 0 0 8px #10b981;
         }
 
-        /* DISCORD TARZI SOL ALT KONTROL PANELİ */
+        /* SOL ALT KONTROL PANELİ */
         .user-control-panel {
             position: absolute;
             bottom: 0;
@@ -64,26 +68,6 @@
             display: flex;
             flex-direction: column;
             gap: 6px;
-        }
-
-        .voice-connected-info {
-            display: none;
-            align-items: center;
-            justify-content: space-between;
-            background: #0f1f17;
-            border: 1px solid #10b981;
-            padding: 6px 10px;
-            border-radius: 6px;
-            font-size: 11px;
-            color: #10b981;
-        }
-        .voice-connected-info .v-info-left { display: flex; align-items: center; gap: 6px; font-weight: 600; }
-        .voice-dot { width: 6px; height: 6px; background-color: #10b981; border-radius: 50%; animation: pulse 1.5s infinite; }
-
-        @keyframes pulse {
-            0% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(0.85); }
-            100% { opacity: 1; transform: scale(1); }
         }
 
         .panel-footer {
@@ -238,11 +222,17 @@
             <div class="room-tag">Sesli Odalar</div>
             <div class="room-list">
                 <div class="room-item voice-room" onclick="joinVoiceChannel('Sesli - Genel')">
-                    🔊 Sesli - Genel
+                    <div class="voice-room-header">
+                        <span>🔊 Sesli - Genel</span>
+                        <span id="vtimer-Sesli - Genel" class="voice-room-timer">00:00</span>
+                    </div>
                     <div id="vusers-Sesli - Genel" class="voice-room-users"></div>
                 </div>
                 <div class="room-item voice-room" onclick="joinVoiceChannel('Sesli - Oyun')">
-                    🔊 Sesli - Oyun
+                    <div class="voice-room-header">
+                        <span>🔊 Sesli - Oyun</span>
+                        <span id="vtimer-Sesli - Oyun" class="voice-room-timer">00:00</span>
+                    </div>
                     <div id="vusers-Sesli - Oyun" class="voice-room-users"></div>
                 </div>
             </div>
@@ -251,14 +241,6 @@
             <div class="online-list" id="user-list"></div>
 
             <div class="user-control-panel">
-                <div id="voice-status-box" class="voice-connected-info">
-                    <div class="v-info-left">
-                        <div class="voice-dot"></div>
-                        <span id="voice-channel-name">Sesli Kanal</span>
-                    </div>
-                    <span id="voice-timer" style="font-family: monospace; font-size: 11px;">00:00</span>
-                </div>
-
                 <div class="panel-footer">
                     <div class="user-badge">
                         <div id="user-avatar" class="avatar">U</div>
@@ -319,9 +301,6 @@
         const muteVoiceBtn = document.getElementById('mute-voice-btn');
         const deafenVoiceBtn = document.getElementById('deafen-voice-btn');
         const screenShareBtn = document.getElementById('screen-share-btn');
-        const voiceStatusBox = document.getElementById('voice-status-box');
-        const voiceTimer = document.getElementById('voice-timer');
-        const voiceChannelName = document.getElementById('voice-channel-name');
         const audioContainer = document.getElementById('audio-container');
         const videoGrid = document.getElementById('video-grid');
 
@@ -521,22 +500,39 @@
             }
         });
 
-        function startTimer() {
+        function startTimer(channelName) {
             secondsConnected = 0;
-            voiceTimer.innerText = "00:00";
+            const timerElem = document.getElementById(`vtimer-${channelName}`);
+            if (timerElem) {
+                timerElem.innerText = "00:00";
+                timerElem.style.display = "inline-block";
+            }
             clearInterval(timerInterval);
             timerInterval = setInterval(() => {
                 secondsConnected++;
                 const mins = Math.floor(secondsConnected / 60).toString().padStart(2, '0');
                 const secs = (secondsConnected % 60).toString().padStart(2, '0');
-                voiceTimer.innerText = `${mins}:${secs}`;
+                if (timerElem) {
+                    timerElem.innerText = `${mins}:${secs}`;
+                }
             }, 1000);
         }
 
-        function stopTimer() {
+        function stopTimer(channelName) {
             clearInterval(timerInterval);
             secondsConnected = 0;
-            voiceTimer.innerText = "00:00";
+            if (channelName) {
+                const timerElem = document.getElementById(`vtimer-${channelName}`);
+                if (timerElem) {
+                    timerElem.innerText = "00:00";
+                    timerElem.style.display = "none";
+                }
+            } else {
+                document.querySelectorAll('.voice-room-timer').forEach(el => {
+                    el.innerText = "00:00";
+                    el.style.display = "none";
+                });
+            }
         }
 
         function setupAudioAnalysis(stream) {
@@ -605,13 +601,10 @@
                 }
 
                 currentVoiceChannel = channelName;
-                voiceChannelName.innerText = channelName;
-
                 leaveVoiceBtn.style.display = 'flex';
-                voiceStatusBox.style.display = 'flex';
 
                 playBeep(880, 'triangle', 0.15);
-                startTimer();
+                startTimer(channelName);
 
                 socket.emit('joinVoiceChannel', channelName);
             } catch (err) {
@@ -639,16 +632,17 @@
             videoGrid.style.display = 'none';
 
             leaveVoiceBtn.style.display = 'none';
-            voiceStatusBox.style.display = 'none';
+
+            if (currentVoiceChannel) {
+                stopTimer(currentVoiceChannel);
+                socket.emit('leaveVoiceChannel', currentVoiceChannel);
+                currentVoiceChannel = null;
+            } else {
+                stopTimer(null);
+            }
 
             if (resetMedia) {
                 playBeep(330, 'triangle', 0.2);
-                stopTimer();
-            }
-
-            if (currentVoiceChannel) {
-                socket.emit('leaveVoiceChannel', currentVoiceChannel);
-                currentVoiceChannel = null;
             }
         }
 
