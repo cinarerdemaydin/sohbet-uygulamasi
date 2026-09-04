@@ -17,46 +17,12 @@ app.get('/', (req, res) => {
 
 const users = {};
 const voiceChannels = {
-    "Sesli - Genel": { users: [], seconds: 0, timer: null },
-    "Sesli - Oyun": { users: [], seconds: 0, timer: null }
+    "Sesli - Genel": [],
+    "Sesli - Oyun": []
 };
 
-// Tüm ses kanallarının durumunu paketleyen yardımcı fonksiyon
-function getVoiceStateData() {
-    const state = {};
-    for (let channel in voiceChannels) {
-        state[channel] = {
-            users: voiceChannels[channel].users,
-            seconds: voiceChannels[channel].seconds
-        };
-    }
-    return state;
-}
-
 function broadcastVoiceState() {
-    io.emit('updateVoiceState', getVoiceStateData());
-}
-
-function startChannelTimer(channelName) {
-    const channel = voiceChannels[channelName];
-    if (channel && !channel.timer) {
-        channel.timer = setInterval(() => {
-            channel.seconds++;
-            io.emit('voiceTimerUpdate', { channel: channelName, seconds: channel.seconds });
-        }, 1000);
-    }
-}
-
-function stopAndResetChannelTimer(channelName) {
-    const channel = voiceChannels[channelName];
-    if (channel) {
-        if (channel.timer) {
-            clearInterval(channel.timer);
-            channel.timer = null;
-        }
-        channel.seconds = 0;
-        io.emit('voiceTimerUpdate', { channel: channelName, seconds: 0 });
-    }
+    io.emit('updateVoiceState', voiceChannels);
 }
 
 io.on('connection', (socket) => {
@@ -139,33 +105,21 @@ io.on('connection', (socket) => {
         const userInfo = users[socket.id];
         if (!userInfo) return;
 
-        // Eski ses kanalından çıkar
         if (userInfo.voiceChannel) {
-            const oldChannelName = userInfo.voiceChannel;
-            socket.leave(oldChannelName);
-            if (voiceChannels[oldChannelName]) {
-                voiceChannels[oldChannelName].users = voiceChannels[oldChannelName].users.filter(u => u.id !== socket.id);
-                if (voiceChannels[oldChannelName].users.length === 0) {
-                    stopAndResetChannelTimer(oldChannelName);
-                }
+            socket.leave(userInfo.voiceChannel);
+            if (voiceChannels[userInfo.voiceChannel]) {
+                voiceChannels[userInfo.voiceChannel] = voiceChannels[userInfo.voiceChannel].filter(u => u.id !== socket.id);
             }
-            socket.to(oldChannelName).emit('userLeftVoice', socket.id);
+            socket.to(userInfo.voiceChannel).emit('userLeftVoice', socket.id);
         }
 
         userInfo.voiceChannel = channelName;
         socket.join(channelName);
 
         if (!voiceChannels[channelName]) {
-            voiceChannels[channelName] = { users: [], seconds: 0, timer: null };
+            voiceChannels[channelName] = [];
         }
-
-        // Kullanıcıyı odaya ekle
-        voiceChannels[channelName].users.push({ id: socket.id, username: userInfo.username, color: userInfo.color });
-
-        // İlk kullanıcı girdiyse sayacı başlat
-        if (voiceChannels[channelName].users.length === 1) {
-            startChannelTimer(channelName);
-        }
+        voiceChannels[channelName].push({ id: socket.id, username: userInfo.username });
 
         socket.to(channelName).emit('userJoinedVoice', socket.id);
         broadcastVoiceState();
@@ -177,17 +131,12 @@ io.on('connection', (socket) => {
             userInfo.voiceChannel = null;
         }
 
-        if (channelName) {
-            socket.leave(channelName);
-            if (voiceChannels[channelName]) {
-                voiceChannels[channelName].users = voiceChannels[channelName].users.filter(u => u.id !== socket.id);
-                if (voiceChannels[channelName].users.length === 0) {
-                    stopAndResetChannelTimer(channelName);
-                }
-            }
-            socket.to(channelName).emit('userLeftVoice', socket.id);
+        socket.leave(channelName);
+        if (voiceChannels[channelName]) {
+            voiceChannels[channelName] = voiceChannels[channelName].filter(u => u.id !== socket.id);
         }
 
+        socket.to(channelName).emit('userLeftVoice', socket.id);
         broadcastVoiceState();
     });
 
@@ -220,14 +169,10 @@ io.on('connection', (socket) => {
         const userInfo = users[socket.id];
         if (userInfo) {
             if (userInfo.voiceChannel) {
-                const channelName = userInfo.voiceChannel;
-                socket.to(channelName).emit('userLeftVoice', socket.id);
-                socket.to(channelName).emit('userStoppedScreenShare', socket.id);
-                if (voiceChannels[channelName]) {
-                    voiceChannels[channelName].users = voiceChannels[channelName].users.filter(u => u.id !== socket.id);
-                    if (voiceChannels[channelName].users.length === 0) {
-                        stopAndResetChannelTimer(channelName);
-                    }
+                socket.to(userInfo.voiceChannel).emit('userLeftVoice', socket.id);
+                socket.to(userInfo.voiceChannel).emit('userStoppedScreenShare', socket.id);
+                if (voiceChannels[userInfo.voiceChannel]) {
+                    voiceChannels[userInfo.voiceChannel] = voiceChannels[userInfo.voiceChannel].filter(u => u.id !== socket.id);
                 }
             }
 
