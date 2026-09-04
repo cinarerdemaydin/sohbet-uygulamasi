@@ -60,14 +60,16 @@ io.on('connection', (socket) => {
         const userInfo = users[socket.id];
         if (userInfo) {
             const oldRoom = userInfo.room;
-            socket.leave(oldRoom);
-            
+
+            // Önce ayrılma mesajını gonderiyoruz
             io.to(oldRoom).emit('message', {
                 user: "Sistem",
                 text: `${userInfo.username} odadan ayrıldı.`,
                 time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                 color: "#888888"
             });
+
+            socket.leave(oldRoom);
 
             userInfo.room = newRoom;
             socket.join(newRoom);
