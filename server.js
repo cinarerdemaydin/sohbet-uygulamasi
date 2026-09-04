@@ -54,6 +54,14 @@ io.on('connection', (socket) => {
         }
     });
 
+    // "Yazıyor..." Göstergesi
+    socket.on('typing', (isTyping) => {
+        const userInfo = users[socket.id];
+        if (userInfo) {
+            socket.broadcast.emit('userTyping', { id: socket.id, username: userInfo.username, isTyping });
+        }
+    });
+
     // Sesli Sohbet WebRTC Sinyalleşmesi
     socket.on('joinVoice', () => {
         socket.broadcast.emit('userJoinedVoice', socket.id);
@@ -62,7 +70,8 @@ io.on('connection', (socket) => {
     socket.on('signal', (data) => {
         io.to(data.to).emit('signal', {
             from: socket.id,
-            signal: data.signal
+            signal: data.signal,
+            type: data.type || 'audio'
         });
     });
 
