@@ -19,33 +19,67 @@ const users = {};
 
 io.on('connection', (socket) => {
 
-    socket.on('joinRoom', ({ username, password, color }) => {
+    socket.on('joinRoom', ({ username, password, color, room }) => {
         if (password === ROOM_PASSWORD) {
+            const targetRoom = room || 'Genel';
+            
             users[socket.id] = { 
                 id: socket.id,
                 username: username, 
-                color: color || '#10b981' 
+                color: color || '#10b981',
+                room: targetRoom
             };
 
+            socket.join(targetRoom);
             socket.emit('loginSuccess');
             io.emit('updateUserList', Object.values(users));
 
             const systemMsg = {
                 user: "Sistem",
-                text: `${username} odaya katıldı.`,
+                text: `${username} katıldı.`,
                 time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                 color: "#888888"
             };
-            io.emit('message', systemMsg);
+            io.to(targetRoom).emit('message', systemMsg);
         } else {
             socket.emit('loginError', 'Hatalı Şifre!');
+        }
+    });
+
+    // Oda Değiştirme Mantığı
+    socket.on('switchRoom', (newRoom) => {
+        const userInfo = users[socket.id];
+        if (userInfo) {
+            const oldRoom = userInfo.room;
+            socket.leave(oldRoom);
+            
+            // Eski odaya ayrıldı bilgisi
+            io.to(oldRoom).emit('message', {
+                user: "Sistem",
+                text: `${userInfo.username} odadan ayrıldı.`,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                color: "#888888"
+            });
+
+            // Yeni odaya geçiş
+            userInfo.room = newRoom;
+            socket.join(newRoom);
+
+            // Yeni odaya katıldı bilgisi
+            io.to(newRoom).emit('message', {
+                user: "Sistem",
+                text: `${userInfo.username} odaya katıldı.`,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                color: "#888888"
+            });
         }
     });
 
     socket.on('chatMessage', (data) => {
         const userInfo = users[socket.id];
         if (userInfo) {
-            io.emit('message', {
+            const roomToSend = data.room || userInfo.room;
+            io.to(roomToSend).emit('message', {
                 user: userInfo.username,
                 text: data.text,
                 time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -54,11 +88,11 @@ io.on('connection', (socket) => {
         }
     });
 
-    // "Yazıyor..." Göstergesi
+    // "Yazıyor..." Göstergesi (Sadece aynı odadaki kullanıcılara)
     socket.on('typing', (isTyping) => {
         const userInfo = users[socket.id];
         if (userInfo) {
-            socket.broadcast.emit('userTyping', { id: socket.id, username: userInfo.username, isTyping });
+            socket.to(userInfo.room).emit('userTyping', { id: socket.id, username: userInfo.username, isTyping });
         }
     });
 
@@ -100,9 +134,9 @@ io.on('connection', (socket) => {
                 time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                 color: "#888888"
             };
+            io.to(userInfo.room).emit('message', systemMsg);
             delete users[socket.id];
             io.emit('updateUserList', Object.values(users));
-            io.emit('message', systemMsg);
             socket.broadcast.emit('userLeftVoice', socket.id);
             socket.broadcast.emit('userStoppedScreenShare', socket.id);
         }
