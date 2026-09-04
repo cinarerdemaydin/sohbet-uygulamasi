@@ -11,14 +11,18 @@ const ROOM_PASSWORD = process.env.ROOM_PASSWORD || "123456";
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Kullanıcı verileri: { socketId: { username, color } }
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 const users = {};
 
 io.on('connection', (socket) => {
-    
+
     socket.on('joinRoom', ({ username, password, color }) => {
         if (password === ROOM_PASSWORD) {
             users[socket.id] = { 
+                id: socket.id,
                 username: username, 
                 color: color || '#10b981' 
             };
@@ -50,7 +54,7 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Sesli Sohbet Sinyalleri
+    // Sesli Sohbet WebRTC Sinyalleşmesi
     socket.on('joinVoice', () => {
         socket.broadcast.emit('userJoinedVoice', socket.id);
     });
@@ -62,7 +66,6 @@ io.on('connection', (socket) => {
         });
     });
 
-    // Konuşma Durumu (Işık Efekti İçin)
     socket.on('speakingStatus', (isSpeaking) => {
         io.emit('userSpeaking', { id: socket.id, isSpeaking });
     });
