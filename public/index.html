@@ -33,7 +33,7 @@
         
         /* Ses Odası Başlık & Sayaç Yapısı */
         .voice-room-header { display: flex; align-items: center; justify-content: space-between; width: 100%; }
-        .voice-room-timer { font-family: monospace; font-size: 11px; color: #10b981; background: rgba(16, 185, 129, 0.1); padding: 2px 6px; border-radius: 4px; display: none; }
+        .voice-room-timer { font-family: monospace; font-size: 11px; color: #10b981; background: rgba(16, 185, 129, 0.15); padding: 2px 6px; border-radius: 4px; font-weight: 600; }
         
         /* Ses Kanalı Kullanıcı Listesi */
         .voice-room-users { margin-top: 4px; padding-left: 10px; display: flex; flex-direction: column; gap: 3px; }
@@ -224,14 +224,14 @@
                 <div class="room-item voice-room" onclick="joinVoiceChannel('Sesli - Genel')">
                     <div class="voice-room-header">
                         <span>🔊 Sesli - Genel</span>
-                        <span id="vtimer-Sesli - Genel" class="voice-room-timer">00:00</span>
+                        <span id="vtimer-Sesli - Genel" class="voice-room-timer" style="display:none;">00:00</span>
                     </div>
                     <div id="vusers-Sesli - Genel" class="voice-room-users"></div>
                 </div>
                 <div class="room-item voice-room" onclick="joinVoiceChannel('Sesli - Oyun')">
                     <div class="voice-room-header">
                         <span>🔊 Sesli - Oyun</span>
-                        <span id="vtimer-Sesli - Oyun" class="voice-room-timer">00:00</span>
+                        <span id="vtimer-Sesli - Oyun" class="voice-room-timer" style="display:none;">00:00</span>
                     </div>
                     <div id="vusers-Sesli - Oyun" class="voice-room-users"></div>
                 </div>
@@ -501,13 +501,13 @@
         });
 
         function startTimer(channelName) {
+            stopTimer(); // Var olan sayacı temizle
             secondsConnected = 0;
             const timerElem = document.getElementById(`vtimer-${channelName}`);
             if (timerElem) {
                 timerElem.innerText = "00:00";
                 timerElem.style.display = "inline-block";
             }
-            clearInterval(timerInterval);
             timerInterval = setInterval(() => {
                 secondsConnected++;
                 const mins = Math.floor(secondsConnected / 60).toString().padStart(2, '0');
@@ -518,21 +518,16 @@
             }, 1000);
         }
 
-        function stopTimer(channelName) {
-            clearInterval(timerInterval);
-            secondsConnected = 0;
-            if (channelName) {
-                const timerElem = document.getElementById(`vtimer-${channelName}`);
-                if (timerElem) {
-                    timerElem.innerText = "00:00";
-                    timerElem.style.display = "none";
-                }
-            } else {
-                document.querySelectorAll('.voice-room-timer').forEach(el => {
-                    el.innerText = "00:00";
-                    el.style.display = "none";
-                });
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
             }
+            secondsConnected = 0;
+            document.querySelectorAll('.voice-room-timer').forEach(el => {
+                el.innerText = "00:00";
+                el.style.display = "none";
+            });
         }
 
         function setupAudioAnalysis(stream) {
@@ -633,12 +628,11 @@
 
             leaveVoiceBtn.style.display = 'none';
 
+            stopTimer();
+
             if (currentVoiceChannel) {
-                stopTimer(currentVoiceChannel);
                 socket.emit('leaveVoiceChannel', currentVoiceChannel);
                 currentVoiceChannel = null;
-            } else {
-                stopTimer(null);
             }
 
             if (resetMedia) {
