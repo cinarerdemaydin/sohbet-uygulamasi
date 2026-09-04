@@ -440,30 +440,47 @@
             }
         });
 
-        // EKRAN PAYLAŞIMI
+        // OPTİMİZE EDİLMİŞ EKRAN PAYLAŞIMI (Gecikmesiz & 1080p/720p 30FPS)
         screenShareBtn.addEventListener('click', async () => {
             if (!screenStream) {
                 try {
                     screenStream = await navigator.mediaDevices.getDisplayMedia({ 
-                        video: { cursor: "always" }, 
+                        video: { 
+                            cursor: "always",
+                            width: { max: 1920, ideal: 1280 },
+                            height: { max: 1080, ideal: 720 },
+                            frameRate: { max: 30, ideal: 30 }
+                        }, 
                         audio: true 
                     });
+
+                    // Akıcılık için video track ayarlamaları
+                    const videoTrack = screenStream.getVideoTracks()[0];
+                    if (videoTrack.contentHint !== undefined) {
+                        videoTrack.contentHint = 'motion';
+                    }
 
                     screenShareBtn.innerText = "Yayını Durdur";
                     screenShareBtn.style.background = "#ef4444";
 
                     addVideoBox('my-screen', screenStream, `${currentUser} (Ekranınız)`);
 
-                    // Hem video hem ses izlerini gönder
-                    screenStream.getTracks().forEach(track => {
-                        for (let id in peers) {
+                    // Stream izlerini peer bağlantılarına ekle
+                    for (let id in peers) {
+                        screenStream.getTracks().forEach(track => {
                             const sender = peers[id].addTrack(track, screenStream);
                             screenSenders[id] = sender;
-                        }
-                    });
+                        });
 
-                    // Sinyal göndererek güncelle
-                    for (let id in peers) {
+                        // Bant genişliğini/Kaliteyi optimize et
+                        const videoSender = peers[id].getSenders().find(s => s.track && s.track.kind === 'video');
+                        if (videoSender && videoSender.setParameters) {
+                            const params = videoSender.getParameters();
+                            if (!params.encodings) params.encodings = [{}];
+                            params.encodings[0].maxBitrate = 3000000; // Max 3 Mbps (akıcı görüntü için)
+                            videoSender.setParameters(params).catch(() => {});
+                        }
+
                         const offer = await peers[id].createOffer();
                         await peers[id].setLocalDescription(offer);
                         socket.emit('signal', { to: id, signal: offer });
@@ -471,7 +488,7 @@
 
                     socket.emit('screenShareStarted');
 
-                    screenStream.getVideoTracks()[0].onended = () => {
+                    videoTrack.onended = () => {
                         stopScreenShare();
                     };
                 } catch(e) {
@@ -664,7 +681,6 @@
                 const volInput = box.querySelector('.stream-vol-slider');
                 const fsBtn = box.querySelector('.btn-fullscreen');
 
-                // Kendi ekranımızsa varsayılan sessiz yap (yankı olmasın)
                 if (id === 'my-screen') {
                     videoElem.muted = true;
                     volInput.disabled = true;
@@ -672,12 +688,10 @@
                     videoElem.muted = false;
                 }
 
-                // Ses seviyesi kontrolü
                 volInput.addEventListener('input', (e) => {
                     videoElem.volume = e.target.value / 100;
                 });
 
-                // Tam ekran yapma
                 fsBtn.addEventListener('click', () => {
                     if (videoElem.requestFullscreen) {
                         videoElem.requestFullscreen();
