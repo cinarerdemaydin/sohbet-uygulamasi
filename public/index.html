@@ -31,6 +31,9 @@
         .room-item:hover { background: #222; color: #fff; }
         .room-item.active { background: #262626; color: #fff; border-color: #444; font-weight: 600; }
         
+        .voice-room-header { display: flex; align-items: center; justify-content: space-between; width: 100%; }
+        .voice-channel-timer { font-size: 11px; font-family: monospace; color: #10b981; background: rgba(16, 185, 129, 0.1); padding: 2px 6px; border-radius: 4px; display: none; }
+
         /* Ses Kanalı Kullanıcı Listesi */
         .voice-room-users { margin-top: 4px; padding-left: 10px; display: flex; flex-direction: column; gap: 3px; }
         .voice-user-tag { font-size: 11px; color: #10b981; display: flex; align-items: center; gap: 6px; }
@@ -238,11 +241,17 @@
             <div class="room-tag">Sesli Odalar</div>
             <div class="room-list">
                 <div class="room-item voice-room" onclick="joinVoiceChannel('Sesli - Genel')">
-                    🔊 Sesli - Genel
+                    <div class="voice-room-header">
+                        <span>🔊 Sesli - Genel</span>
+                        <span id="vtimer-Sesli - Genel" class="voice-channel-timer">00:00</span>
+                    </div>
                     <div id="vusers-Sesli - Genel" class="voice-room-users"></div>
                 </div>
                 <div class="room-item voice-room" onclick="joinVoiceChannel('Sesli - Oyun')">
-                    🔊 Sesli - Oyun
+                    <div class="voice-room-header">
+                        <span>🔊 Sesli - Oyun</span>
+                        <span id="vtimer-Sesli - Oyun" class="voice-channel-timer">00:00</span>
+                    </div>
                     <div id="vusers-Sesli - Oyun" class="voice-room-users"></div>
                 </div>
             </div>
@@ -347,8 +356,6 @@
         let peers = {};
         let isMuted = false;
         let isDeafened = false;
-        let timerInterval = null;
-        let secondsConnected = 0;
         let audioContext = null;
         let analyser = null;
         let microphone = null;
@@ -363,6 +370,12 @@
                 { urls: 'stun:stun2.l.google.com:19302' }
             ] 
         };
+
+        function formatTime(totalSeconds) {
+            const mins = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+            const secs = (totalSeconds % 60).toString().padStart(2, '0');
+            return `${mins}:${secs}`;
+        }
 
         function playBeep(freq = 440, type = 'sine', duration = 0.1) {
             try {
@@ -502,24 +515,6 @@
             }
         });
 
-        function startTimer() {
-            secondsConnected = 0;
-            voiceTimer.innerText = "00:00";
-            clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                secondsConnected++;
-                const mins = Math.floor(secondsConnected / 60).toString().padStart(2, '0');
-                const secs = (secondsConnected % 60).toString().padStart(2, '0');
-                voiceTimer.innerText = `${mins}:${secs}`;
-            }, 1000);
-        }
-
-        function stopTimer() {
-            clearInterval(timerInterval);
-            secondsConnected = 0;
-            voiceTimer.innerText = "00:00";
-        }
-
         function setupAudioAnalysis(stream) {
             try {
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -593,7 +588,6 @@
                 voiceStatusBox.style.display = 'flex';
 
                 playBeep(880, 'triangle', 0.15);
-                startTimer();
 
                 socket.emit('joinVoiceChannel', channelName);
             } catch (err) {
@@ -625,7 +619,6 @@
 
             if (resetMedia) {
                 playBeep(330, 'triangle', 0.2);
-                stopTimer();
             }
 
             if (currentVoiceChannel) {
@@ -638,13 +631,48 @@
             leaveVoiceChannel(true);
         });
 
+        // Sunucudan gelen canlı kanal süresi güncellemesi
+        socket.on('voiceTimerUpdate', (data) => {
+            const formatted = formatTime(data.seconds);
+            
+            // Oda başlığının yanındaki zamanı güncelle
+            const channelTimerElem = document.getElementById(`vtimer-${data.channel}`);
+            if (channelTimerElem) {
+                if (data.seconds > 0) {
+                    channelTimerElem.innerText = formatted;
+                    channelTimerElem.style.display = 'inline-block';
+                } else {
+                    channelTimerElem.innerText = '00:00';
+                    channelTimerElem.style.display = 'none';
+                }
+            }
+
+            // Eğer şu an bağlı olduğumuz kanal güncelleniyorsa, sol alt paneli de güncelle
+            if (currentVoiceChannel === data.channel) {
+                voiceTimer.innerText = formatted;
+            }
+        });
+
         socket.on('updateVoiceState', (channelsState) => {
             document.querySelectorAll('.voice-room-users').forEach(el => el.innerHTML = '');
 
             for (let channel in channelsState) {
+                const channelData = channelsState[channel];
                 const targetDiv = document.getElementById(`vusers-${channel}`);
+                const timerElem = document.getElementById(`vtimer-${channel}`);
+
+                if (timerElem) {
+                    if (channelData.seconds > 0) {
+                        timerElem.innerText = formatTime(channelData.seconds);
+                        timerElem.style.display = 'inline-block';
+                    } else {
+                        timerElem.innerText = '00:00';
+                        timerElem.style.display = 'none';
+                    }
+                }
+
                 if (targetDiv) {
-                    channelsState[channel].forEach(user => {
+                    channelData.users.forEach(user => {
                         const tag = document.createElement('div');
                         tag.classList.add('voice-user-tag');
                         tag.innerText = user.username;
