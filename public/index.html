@@ -582,16 +582,16 @@
 
                     analyser.getByteFrequencyData(dataArray);
                     let sum = 0;
-                    for (let i = 0; i < bufferLength; i++) {
+                    // Konuşma frekanslarına odaklanarak dip gürültüleri ele
+                    for (let i = 2; i < bufferLength - 10; i++) {
                         sum += dataArray[i];
                     }
-                    let average = sum / bufferLength;
+                    let average = sum / (bufferLength - 12);
 
-                    // Gürültü kapısı mantığı: Eşik 28'e çıkarıldı (Nefes ve klavye seslerini doğrudan keser)
-                    const threshold = isNoiseGateActive ? 28 : 5;
+                    // Konuşmayı yakalayan, dip sesleri kesen ideal eşik: 12
+                    const threshold = isNoiseGateActive ? 12 : 3;
                     let isSpeaking = average > threshold;
 
-                    // Eğer gürültü filtresi aktifse ve ses eşiğin altındaysa akışı kapat
                     if (localStream && localStream.getAudioTracks().length > 0) {
                         localStream.getAudioTracks()[0].enabled = isMuted ? false : (isNoiseGateActive ? isSpeaking : true);
                     }
@@ -600,7 +600,7 @@
                         wasSpeaking = isSpeaking;
                         socket.emit('speakingStatus', isSpeaking);
                     }
-                }, 80);
+                }, 50);
             } catch(e) {}
         }
 
