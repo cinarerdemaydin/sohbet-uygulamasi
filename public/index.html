@@ -109,32 +109,36 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 90px;
+            max-width: 80px;
         }
 
         /* Küçük İkon Butonları */
         .icon-actions {
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 3px;
         }
         .icon-btn {
             background: transparent;
             border: none;
             color: #b9bbbe;
-            width: 30px;
-            height: 30px;
+            width: 28px;
+            height: 28px;
             border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            font-size: 13px;
+            font-size: 12px;
             transition: all 0.15s ease;
         }
         .icon-btn:hover {
             background: #262626;
             color: #fff;
+        }
+        .icon-btn.active-noise {
+            color: #10b981;
+            background: rgba(16, 185, 129, 0.15);
         }
         .icon-btn.active-danger {
             color: #ef4444;
@@ -269,6 +273,7 @@
                         <span id="panel-username" class="username-text">Kullanıcı</span>
                     </div>
                     <div class="icon-actions">
+                        <button id="noise-gate-btn" class="icon-btn active-noise" title="Gürültü Filtresi Açık/Kapalı"><i class="fa-solid fa-wand-magic-sparkles"></i></button>
                         <button id="mute-voice-btn" class="icon-btn" title="Mikrofonu Sustur"><i class="fa-solid fa-microphone"></i></button>
                         <button id="deafen-voice-btn" class="icon-btn" title="Kulaklığı Kapat"><i class="fa-solid fa-headphones"></i></button>
                         <button id="screen-share-btn" class="icon-btn" title="Ekran Paylaş"><i class="fa-solid fa-desktop"></i></button>
@@ -322,6 +327,7 @@
         const leaveVoiceBtn = document.getElementById('leave-voice-btn');
         const muteVoiceBtn = document.getElementById('mute-voice-btn');
         const deafenVoiceBtn = document.getElementById('deafen-voice-btn');
+        const noiseGateBtn = document.getElementById('noise-gate-btn');
         const screenShareBtn = document.getElementById('screen-share-btn');
         const audioContainer = document.getElementById('audio-container');
         const videoGrid = document.getElementById('video-grid');
@@ -345,6 +351,7 @@
         let peers = {};
         let isMuted = false;
         let isDeafened = false;
+        let isNoiseGateActive = true;
         let timerInterval = null;
         let secondsConnected = 0;
         let audioContext = null;
@@ -580,16 +587,36 @@
                     }
                     let average = sum / bufferLength;
 
-                    // Nefes ve arka plan gürültülerini kesmek için eşik değeri 20'ye yükseltildi
-                    let isSpeaking = average > 20;
+                    // Gürültü kapısı mantığı: Eşik 28'e çıkarıldı (Nefes ve klavye seslerini doğrudan keser)
+                    const threshold = isNoiseGateActive ? 28 : 5;
+                    let isSpeaking = average > threshold;
+
+                    // Eğer gürültü filtresi aktifse ve ses eşiğin altındaysa akışı kapat
+                    if (localStream && localStream.getAudioTracks().length > 0) {
+                        localStream.getAudioTracks()[0].enabled = isMuted ? false : (isNoiseGateActive ? isSpeaking : true);
+                    }
 
                     if (isSpeaking !== wasSpeaking) {
                         wasSpeaking = isSpeaking;
                         socket.emit('speakingStatus', isSpeaking);
                     }
-                }, 100);
+                }, 80);
             } catch(e) {}
         }
+
+        noiseGateBtn.addEventListener('click', () => {
+            isNoiseGateActive = !isNoiseGateActive;
+            if (isNoiseGateActive) {
+                noiseGateBtn.classList.add('active-noise');
+                noiseGateBtn.title = "Gürültü Filtresi: AÇIK";
+            } else {
+                noiseGateBtn.classList.remove('active-noise');
+                noiseGateBtn.title = "Gürültü Filtresi: KAPALI";
+                if (localStream && !isMuted) {
+                    localStream.getAudioTracks()[0].enabled = true;
+                }
+            }
+        });
 
         socket.on('userSpeaking', (data) => {
             const userElement = document.getElementById(`user-item-${data.id}`);
@@ -611,12 +638,11 @@
 
             try {
                 if (!localStream) {
-                    // GELİŞMİŞ GÜRÜLTÜ ENGELLEME FİLTRELERİ (Gelişmiş Mikrofon Ayarları)
                     localStream = await navigator.mediaDevices.getUserMedia({ 
                         audio: { 
-                            echoCancellation: true,      // Yankı engelleme
-                            noiseSuppression: true,      // Gürültü bastırma (Klavye, fan, nefes vb.)
-                            autoGainControl: true,       // Otomatik ses seviyesi dengeleme
+                            echoCancellation: true,
+                            noiseSuppression: true,
+                            autoGainControl: true,
                             channelCount: 1,
                             sampleRate: 48000
                         }, 
@@ -693,7 +719,6 @@
         screenShareBtn.addEventListener('click', async () => {
             if (!screenStream) {
                 try {
-                    // YÜKSEK KALİTELİ EKRAN PAYLAŞIMI (1080p 60FPS)
                     screenStream = await navigator.mediaDevices.getDisplayMedia({ 
                         video: { 
                             cursor: "always",
@@ -706,7 +731,7 @@
 
                     const videoTrack = screenStream.getVideoTracks()[0];
                     if (videoTrack.contentHint !== undefined) {
-                        videoTrack.contentHint = 'detail'; // Yazıların ve detayların cam gibi net görünmesini sağlar
+                        videoTrack.contentHint = 'detail';
                     }
 
                     screenShareBtn.classList.add('active-danger');
@@ -719,7 +744,6 @@
                             screenSenders[id] = sender;
                         });
 
-                        // BANT GENİŞLİĞİ / BİTRATE YÜKSELTME (NETLİK İÇİN)
                         applyHighBitrate(peers[id]);
 
                         const offer = await peers[id].createOffer();
@@ -740,13 +764,12 @@
             }
         });
 
-        // YAYIN BİTRATE'İNİ 4 Mbps (4000 kbps) SEVİYESİNE ÇIKARAN FONKSİYON (Bulanıklığı Engeller)
         function applyHighBitrate(peerConnection) {
             peerConnection.getSenders().forEach(sender => {
                 if (sender.track && sender.track.kind === 'video') {
                     const parameters = sender.getParameters();
                     if (!parameters.encodings) parameters.encodings = [{}];
-                    parameters.encodings[0].maxBitrate = 4000000; // 4 Mbps
+                    parameters.encodings[0].maxBitrate = 4000000;
                     sender.setParameters(parameters).catch(e => console.log(e));
                 }
             });
