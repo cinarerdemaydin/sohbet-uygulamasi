@@ -5,29 +5,44 @@ const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
+
 const io = new Server(server, {
     maxHttpBufferSize: 1e6,
     pingTimeout: 20000,
     pingInterval: 25000
 });
 
-// Üretimde mutlaka ortam değişkeni kullan:
-// Windows PowerShell: $env:ROOM_PASSWORD="çok-güçlü-şifre"
 const ROOM_PASSWORD = process.env.ROOM_PASSWORD || '123456';
 
 if (ROOM_PASSWORD === '123456') {
-    console.warn('UYARI: ROOM_PASSWORD ayarlanmamış. Varsayılan şifre 123456 kullanılıyor.');
+    console.warn(
+        'UYARI: ROOM_PASSWORD ayarlanmamış. Varsayılan şifre 123456 kullanılıyor.'
+    );
 }
 
 app.disable('x-powered-by');
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-const TEXT_ROOMS = new Set(['Genel', 'Oyun', 'Müzik']);
-const VOICE_ROOMS = new Set(['Sesli - Genel', 'Sesli - Oyun']);
+
+/* =========================================================
+   WAFFLE AYARLARI
+========================================================= */
+
+const TEXT_ROOMS = new Set([
+    'Genel',
+    'Oyun',
+    'Müzik'
+]);
+
+const VOICE_ROOMS = new Set([
+    'Sesli - Genel',
+    'Sesli - Oyun'
+]);
 
 const ALLOWED_COLORS = new Set([
     '#3b82f6',
@@ -36,8 +51,16 @@ const ALLOWED_COLORS = new Set([
     '#f59e0b',
     '#8b5cf6',
     '#ec4899',
-    '#06b6d4'
+    '#06b6d4',
+    '#eab308',
+    '#f97316',
+    '#a855f7'
 ]);
+
+
+/* =========================================================
+   DURUM
+========================================================= */
 
 const users = Object.create(null);
 
@@ -46,10 +69,21 @@ const voiceChannels = {
     'Sesli - Oyun': []
 };
 
-// Basit server-side rate limit.
-const messageRate = new Map();
-const typingRate = new Map();
-const signalRate = new Map();
+
+/* =========================================================
+   RATE LIMIT
+========================================================= */
+
+const limits = {
+    message: new Map(),
+    typing: new Map(),
+    signal: new Map()
+};
+
+
+/* =========================================================
+   YARDIMCI FONKSİYONLAR
+========================================================= */
 
 function now() {
     return new Date().toLocaleTimeString([], {
@@ -58,18 +92,24 @@ function now() {
     });
 }
 
-function cleanText(value, maxLength) {
-    if (typeof value !== 'string') return '';
+
+function cleanText(value, max) {
+    if (typeof value !== 'string') {
+        return '';
+    }
 
     return value
         .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '')
         .trim()
-        .slice(0, maxLength);
+        .slice(0, max);
 }
 
+
 function cleanUsername(value) {
-    return cleanText(value, 24).replace(/\s+/g, ' ');
+    return cleanText(value, 24)
+        .replace(/\s+/g, ' ');
 }
+
 
 function validColor(color) {
     return ALLOWED_COLORS.has(color)
@@ -77,80 +117,114 @@ function validColor(color) {
         : '#10b981';
 }
 
-function isAllowedTextRoom(room) {
-    return TEXT_ROOMS.has(room);
-}
 
-function isAllowedVoiceRoom(room) {
-    return VOICE_ROOMS.has(room);
-}
+function limited(map, id, max, windowMs) {
 
-function rateLimited(map, id, limit, windowMs) {
-    const nowMs = Date.now();
-    const entry = map.get(id);
+    const time = Date.now();
 
-    if (!entry || nowMs - entry.startedAt >= windowMs) {
+    const item = map.get(id);
+
+    if (!item || time - item.start >= windowMs) {
+
         map.set(id, {
-            startedAt: nowMs,
+            start: time,
             count: 1
         });
 
         return false;
     }
 
-    entry.count += 1;
+    item.count++;
 
-    return entry.count > limit;
+    return item.count > max;
 }
 
-function removeFromVoice(socket, userInfo, notify = true) {
-    const channel = userInfo?.voiceChannel;
 
-    if (!channel) return;
-
-    if (voiceChannels[channel]) {
-        voiceChannels[channel] =
-            voiceChannels[channel].filter(
-                user => user.id !== socket.id
-            );
-    }
-
-    socket.leave(channel);
-
-    if (notify) {
-        socket.to(channel).emit(
-            'userLeftVoice',
-            socket.id
-        );
-
-        socket.to(channel).emit(
-            'userStoppedScreenShare',
-            socket.id
-        );
-    }
-
-    userInfo.voiceChannel = null;
-}
-
-function broadcastVoiceState() {
-    io.emit(
-        'updateVoiceState',
-        voiceChannels
-    );
-}
-
-function broadcastUserList() {
+function broadcastUsers() {
     io.emit(
         'updateUserList',
         Object.values(users)
     );
 }
 
+
+function broadcastVoice() {
+    io.emit(
+        'updateVoiceState',
+        voiceChannels
+    );
+}
+
+
+/* =========================================================
+   SES KANALINDAN AYRIL
+========================================================= */
+
+function leaveVoice(socket, user, notify = true) {
+
+    const channel = user.voiceChannel;
+
+    if (!channel) {
+        return;
+    }
+
+    if (voiceChannels[channel]) {
+
+        voiceChannels[channel] =
+            voiceChannels[channel].filter(
+                userItem => userItem.id !== socket.id
+            );
+    }
+
+    socket.leave(channel);
+
+    if (notify) {
+
+        socket
+            .to(channel)
+            .emit(
+                'userLeftVoice',
+                socket.id
+            );
+
+        socket
+            .to(channel)
+            .emit(
+                'userStoppedScreenShare',
+                socket.id
+            );
+
+        socket
+            .to(channel)
+            .emit(
+                'userSpeaking',
+                {
+                    id: socket.id,
+                    isSpeaking: false
+                }
+            );
+    }
+
+    user.voiceChannel = null;
+}
+
+
+/* =========================================================
+   SOCKET.IO
+========================================================= */
+
 io.on('connection', socket => {
+
+
+    /* =====================================================
+       ODAYA GİRİŞ
+    ===================================================== */
 
     socket.on('joinRoom', payload => {
 
-        if (users[socket.id]) return;
+        if (users[socket.id]) {
+            return;
+        }
 
         const username =
             cleanUsername(payload?.username);
@@ -162,7 +236,9 @@ io.on('connection', socket => {
 
         const room = payload?.room;
 
+
         if (password !== ROOM_PASSWORD) {
+
             socket.emit(
                 'loginError',
                 'Hatalı Şifre!'
@@ -171,10 +247,12 @@ io.on('connection', socket => {
             return;
         }
 
+
         if (
             username.length < 2 ||
             username.length > 24
         ) {
+
             socket.emit(
                 'loginError',
                 'Kullanıcı adı 2-24 karakter olmalı.'
@@ -183,7 +261,9 @@ io.on('connection', socket => {
             return;
         }
 
-        if (!isAllowedTextRoom(room)) {
+
+        if (!TEXT_ROOMS.has(room)) {
+
             socket.emit(
                 'loginError',
                 'Geçersiz sohbet odası.'
@@ -192,14 +272,17 @@ io.on('connection', socket => {
             return;
         }
 
-        const duplicate =
+
+        const usernameExists =
             Object.values(users).some(
                 user =>
                     user.username.toLowerCase() ===
                     username.toLowerCase()
             );
 
-        if (duplicate) {
+
+        if (usernameExists) {
+
             socket.emit(
                 'loginError',
                 'Bu kullanıcı adı zaten kullanımda.'
@@ -208,72 +291,133 @@ io.on('connection', socket => {
             return;
         }
 
+
         users[socket.id] = {
+
             id: socket.id,
+
             username,
-            color: validColor(payload?.color),
+
+            color: validColor(
+                payload?.color
+            ),
+
             room,
+
             voiceChannel: null
         };
+
 
         socket.join(room);
 
         socket.emit('loginSuccess');
 
-        broadcastUserList();
-        broadcastVoiceState();
+        broadcastUsers();
 
-        socket.to(room).emit('message', {
-            user: 'Sistem',
-            text: `${username} katıldı.`,
-            time: now(),
-            color: '#888888'
-        });
+        broadcastVoice();
+
+
+        socket
+            .to(room)
+            .emit(
+                'message',
+                {
+                    user: 'Sistem',
+
+                    text: `${username} katıldı.`,
+
+                    time: now(),
+
+                    color: '#888888'
+                }
+            );
     });
+
+
+    /* =====================================================
+       METİN ODASI DEĞİŞTİR
+    ===================================================== */
 
     socket.on('switchRoom', newRoom => {
 
-        const userInfo = users[socket.id];
+        const user = users[socket.id];
 
-        if (
-            !userInfo ||
-            !isAllowedTextRoom(newRoom) ||
-            newRoom === userInfo.room
-        ) {
+        if (!user) {
             return;
         }
 
-        const oldRoom = userInfo.room;
+        if (!TEXT_ROOMS.has(newRoom)) {
+            return;
+        }
 
-        socket.to(oldRoom).emit('message', {
-            user: 'Sistem',
-            text: `${userInfo.username} odadan ayrıldı.`,
-            time: now(),
-            color: '#888888'
-        });
+        if (newRoom === user.room) {
+            return;
+        }
+
+
+        const oldRoom = user.room;
+
+
+        socket
+            .to(oldRoom)
+            .emit(
+                'message',
+                {
+                    user: 'Sistem',
+
+                    text:
+                        `${user.username} odadan ayrıldı.`,
+
+                    time: now(),
+
+                    color: '#888888'
+                }
+            );
+
 
         socket.leave(oldRoom);
 
-        userInfo.room = newRoom;
+
+        user.room = newRoom;
+
 
         socket.join(newRoom);
 
-        socket.to(newRoom).emit('message', {
-            user: 'Sistem',
-            text: `${userInfo.username} odaya katıldı.`,
-            time: now(),
-            color: '#888888'
-        });
+
+        socket
+            .to(newRoom)
+            .emit(
+                'message',
+                {
+                    user: 'Sistem',
+
+                    text:
+                        `${user.username} odaya katıldı.`,
+
+                    time: now(),
+
+                    color: '#888888'
+                }
+            );
     });
+
+
+    /* =====================================================
+       MESAJ
+    ===================================================== */
 
     socket.on('chatMessage', data => {
 
-        const userInfo = users[socket.id];
+        const user = users[socket.id];
+
+        if (!user) {
+            return;
+        }
+
 
         if (
-            !userInfo ||
-            rateLimited(
-                messageRate,
+            limited(
+                limits.message,
                 socket.id,
                 8,
                 3000
@@ -282,38 +426,62 @@ io.on('connection', socket => {
             return;
         }
 
+
         const text =
-            cleanText(data?.text, 2000);
+            cleanText(
+                data?.text,
+                2000
+            );
 
-        const room = data?.room;
 
-        if (
-            !text ||
-            room !== userInfo.room ||
-            !isAllowedTextRoom(room)
-        ) {
+        if (!text) {
             return;
         }
 
-        io.to(userInfo.room).emit(
-            'message',
-            {
-                user: userInfo.username,
-                text,
-                time: now(),
-                color: userInfo.color
-            }
-        );
+
+        if (data?.room !== user.room) {
+            return;
+        }
+
+
+        if (!TEXT_ROOMS.has(data.room)) {
+            return;
+        }
+
+
+        io
+            .to(user.room)
+            .emit(
+                'message',
+                {
+                    user: user.username,
+
+                    text,
+
+                    time: now(),
+
+                    color: user.color
+                }
+            );
     });
 
-    socket.on('typing', isTyping => {
 
-        const userInfo = users[socket.id];
+    /* =====================================================
+       YAZIYOR
+    ===================================================== */
+
+    socket.on('typing', value => {
+
+        const user = users[socket.id];
+
+        if (!user) {
+            return;
+        }
+
 
         if (
-            !userInfo ||
-            rateLimited(
-                typingRate,
+            limited(
+                limits.typing,
                 socket.id,
                 20,
                 5000
@@ -322,216 +490,350 @@ io.on('connection', socket => {
             return;
         }
 
-        socket.to(userInfo.room).emit(
-            'userTyping',
-            {
-                id: socket.id,
-                username: userInfo.username,
-                isTyping: Boolean(isTyping)
+
+        socket
+            .to(user.room)
+            .emit(
+                'userTyping',
+                {
+                    id: socket.id,
+
+                    username: user.username,
+
+                    isTyping: Boolean(value)
+                }
+            );
+    });
+
+
+    /* =====================================================
+       SES KANALINA GİR
+    ===================================================== */
+
+    socket.on(
+        'joinVoiceChannel',
+        channel => {
+
+            const user = users[socket.id];
+
+            if (!user) {
+                return;
             }
-        );
-    });
 
-    socket.on('joinVoiceChannel', channelName => {
 
-        const userInfo = users[socket.id];
+            if (!VOICE_ROOMS.has(channel)) {
+                return;
+            }
 
-        if (
-            !userInfo ||
-            !isAllowedVoiceRoom(channelName)
-        ) {
-            return;
+
+            if (user.voiceChannel === channel) {
+                return;
+            }
+
+
+            leaveVoice(
+                socket,
+                user,
+                true
+            );
+
+
+            const peers =
+                voiceChannels[channel]
+                    .map(
+                        userItem => userItem.id
+                    );
+
+
+            user.voiceChannel = channel;
+
+
+            socket.join(channel);
+
+
+            voiceChannels[channel].push({
+
+                id: socket.id,
+
+                username: user.username
+            });
+
+
+            socket.emit(
+                'voicePeers',
+                peers
+            );
+
+
+            socket
+                .to(channel)
+                .emit(
+                    'userJoinedVoice',
+                    socket.id
+                );
+
+
+            broadcastVoice();
         }
+    );
 
-        if (
-            userInfo.voiceChannel === channelName
-        ) {
-            return;
+
+    /* =====================================================
+       SES KANALINDAN ÇIK
+    ===================================================== */
+
+    socket.on(
+        'leaveVoiceChannel',
+        channel => {
+
+            const user = users[socket.id];
+
+            if (!user) {
+                return;
+            }
+
+
+            if (user.voiceChannel !== channel) {
+                return;
+            }
+
+
+            leaveVoice(
+                socket,
+                user,
+                true
+            );
+
+
+            broadcastVoice();
         }
+    );
 
-        removeFromVoice(
-            socket,
-            userInfo,
-            true
-        );
 
-        const existingPeers =
-            voiceChannels[channelName]
-                .map(user => user.id);
-
-        userInfo.voiceChannel = channelName;
-
-        socket.join(channelName);
-
-        voiceChannels[channelName].push({
-            id: socket.id,
-            username: userInfo.username
-        });
-
-        // Sadece yeni katılan taraf offer başlatıyor.
-        socket.emit(
-            'voicePeers',
-            existingPeers
-        );
-
-        socket.to(channelName).emit(
-            'userJoinedVoice',
-            socket.id
-        );
-
-        broadcastVoiceState();
-    });
-
-    socket.on('leaveVoiceChannel', channelName => {
-
-        const userInfo = users[socket.id];
-
-        if (
-            !userInfo ||
-            userInfo.voiceChannel !== channelName
-        ) {
-            return;
-        }
-
-        removeFromVoice(
-            socket,
-            userInfo,
-            true
-        );
-
-        broadcastVoiceState();
-    });
+    /* =====================================================
+       WEBRTC SIGNAL
+    ===================================================== */
 
     socket.on('signal', data => {
 
-        const sender = users[socket.id];
-        const target = users[data?.to];
+        const sender =
+            users[socket.id];
 
-        // Sadece aynı ses kanalındaki kişiler
-        // WebRTC sinyali gönderebilir.
+        const target =
+            users[data?.to];
+
+
+        if (!sender || !target) {
+            return;
+        }
+
+
+        if (!sender.voiceChannel) {
+            return;
+        }
+
+
         if (
-            !sender ||
-            !target ||
-            !sender.voiceChannel ||
-            sender.voiceChannel !== target.voiceChannel
+            sender.voiceChannel !==
+            target.voiceChannel
         ) {
             return;
         }
 
+
         if (
-            rateLimited(
-                signalRate,
+            limited(
+                limits.signal,
                 socket.id,
-                150,
+                180,
                 10000
             )
         ) {
             return;
         }
 
+
         if (
-            !data.signal ||
+            !data?.signal ||
             typeof data.signal !== 'object'
         ) {
             return;
         }
 
-        socket.to(data.to).emit(
-            'signal',
-            {
-                from: socket.id,
-                signal: data.signal
-            }
-        );
+
+        socket
+            .to(data.to)
+            .emit(
+                'signal',
+                {
+                    from: socket.id,
+
+                    signal: data.signal
+                }
+            );
     });
 
-    socket.on('screenShareStarted', () => {
 
-        const userInfo = users[socket.id];
+    /* =====================================================
+       EKRAN PAYLAŞIMI
+    ===================================================== */
 
-        if (userInfo?.voiceChannel) {
+    socket.on(
+        'screenShareStarted',
+        () => {
+
+            const user =
+                users[socket.id];
+
+
+            if (
+                user?.voiceChannel
+            ) {
+
+                socket
+                    .to(user.voiceChannel)
+                    .emit(
+                        'userStartedScreenShare',
+                        {
+                            id: socket.id,
+
+                            username:
+                                user.username
+                        }
+                    );
+            }
+        }
+    );
+
+
+    socket.on(
+        'screenShareStopped',
+        () => {
+
+            const user =
+                users[socket.id];
+
+
+            if (
+                user?.voiceChannel
+            ) {
+
+                socket
+                    .to(user.voiceChannel)
+                    .emit(
+                        'userStoppedScreenShare',
+                        socket.id
+                    );
+            }
+        }
+    );
+
+
+    /* =====================================================
+       KONUŞMA DURUMU
+    ===================================================== */
+
+    socket.on(
+        'speakingStatus',
+        value => {
+
+            const user =
+                users[socket.id];
+
+
+            if (
+                user?.voiceChannel
+            ) {
+
+                socket
+                    .to(user.voiceChannel)
+                    .emit(
+                        'userSpeaking',
+                        {
+                            id: socket.id,
+
+                            isSpeaking:
+                                Boolean(value)
+                        }
+                    );
+            }
+        }
+    );
+
+
+    /* =====================================================
+       BAĞLANTI KESİLDİ
+    ===================================================== */
+
+    socket.on(
+        'disconnect',
+        () => {
+
+            const user =
+                users[socket.id];
+
+
+            if (!user) {
+                return;
+            }
+
+
+            leaveVoice(
+                socket,
+                user,
+                true
+            );
+
+
             socket
-                .to(userInfo.voiceChannel)
+                .to(user.room)
                 .emit(
-                    'userStartedScreenShare',
+                    'message',
                     {
-                        id: socket.id,
-                        username: userInfo.username
+                        user: 'Sistem',
+
+                        text:
+                            `${user.username} ayrıldı.`,
+
+                        time: now(),
+
+                        color: '#888888'
                     }
                 );
-        }
-    });
 
-    socket.on('screenShareStopped', () => {
 
-        const userInfo = users[socket.id];
+            delete users[socket.id];
 
-        if (userInfo?.voiceChannel) {
-            socket
-                .to(userInfo.voiceChannel)
-                .emit(
-                    'userStoppedScreenShare',
-                    socket.id
+
+            Object.values(limits)
+                .forEach(
+                    map =>
+                        map.delete(socket.id)
                 );
+
+
+            broadcastUsers();
+
+            broadcastVoice();
         }
-    });
-
-    socket.on('speakingStatus', isSpeaking => {
-
-        const userInfo = users[socket.id];
-
-        if (userInfo?.voiceChannel) {
-
-            socket
-                .to(userInfo.voiceChannel)
-                .emit(
-                    'userSpeaking',
-                    {
-                        id: socket.id,
-                        isSpeaking: Boolean(isSpeaking)
-                    }
-                );
-        }
-    });
-
-    socket.on('disconnect', () => {
-
-        const userInfo = users[socket.id];
-
-        if (!userInfo) return;
-
-        removeFromVoice(
-            socket,
-            userInfo,
-            true
-        );
-
-        socket.to(userInfo.room).emit(
-            'message',
-            {
-                user: 'Sistem',
-                text: `${userInfo.username} ayrıldı.`,
-                time: now(),
-                color: '#888888'
-            }
-        );
-
-        delete users[socket.id];
-
-        messageRate.delete(socket.id);
-        typingRate.delete(socket.id);
-        signalRate.delete(socket.id);
-
-        broadcastUserList();
-        broadcastVoiceState();
-    });
+    );
 });
+
+
+/* =========================================================
+   SUNUCU
+========================================================= */
 
 const PORT =
     Number(process.env.PORT) || 3000;
 
-server.listen(PORT, () => {
-    console.log(
-        `WAFFLE sunucusu ${PORT} portunda çalışıyor.`
-    );
-});
+
+server.listen(
+    PORT,
+    () => {
+
+        console.log(
+            `WAFFLE sunucusu ${PORT} portunda çalışıyor.`
+        );
+    }
+);
