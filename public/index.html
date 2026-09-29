@@ -2,56 +2,51 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<meta name="theme-color" content="#0b0d12">
-<title>WAFFLE — Topluluk</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080b12">
+<title>WAFFLE</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
 <style>
 :root{
-    --bg:#090b10;
-    --panel:#0f1219;
-    --panel2:#141821;
-    --panel3:#1a1f2a;
-    --line:#252b38;
-    --text:#f4f7fb;
+    --bg:#070a10;
+    --bg2:#0a0e16;
+    --panel:#0e131d;
+    --panel2:#121925;
+    --panel3:#171f2d;
+    --line:rgba(255,255,255,.075);
+    --line2:rgba(255,255,255,.12);
+    --text:#f5f7fb;
     --muted:#8993a5;
-    --dim:#596274;
-    --accent:#8b5cf6;
-    --accent2:#22c55e;
-    --danger:#ef4444;
-    --warning:#f59e0b;
-    --shadow:0 24px 70px rgba(0,0,0,.38);
-    --radius:14px
+    --muted2:#626d80;
+    --accent:#7657ff;
+    --accent2:#927cff;
+    --green:#24d6a2;
+    --red:#ff5870;
+    --yellow:#f2bd55;
+    --shadow:0 24px 80px rgba(0,0,0,.42);
 }
 
 *{
     box-sizing:border-box;
     margin:0;
     padding:0;
+    font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
 }
 
-html,
-body{
+html,body{
     width:100%;
     height:100%;
     overflow:hidden;
-}
-
-body{
-    font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-    background:
-        radial-gradient(
-            circle at 75% -10%,
-            rgba(139,92,246,.13),
-            transparent 35%
-        ),
-        var(--bg);
+    background:var(--bg);
     color:var(--text);
 }
 
-button,
-input,
-textarea{
+button,input,select{
     font:inherit;
 }
 
@@ -59,4912 +54,3696 @@ button{
     cursor:pointer;
 }
 
-::-webkit-scrollbar{
-    width:8px;
-    height:8px;
-}
-
-::-webkit-scrollbar-thumb{
-    background:#303746;
-    border-radius:20px;
-}
-
-::-webkit-scrollbar-track{
-    background:transparent;
-}
-
 .hidden{
     display:none!important;
 }
 
-
-/* =========================================================
+/* =========================
    LOGIN
-========================================================= */
+========================= */
 
 #login-screen{
-    position:fixed;
-    inset:0;
-    display:grid;
-    place-items:center;
+    width:100%;
+    height:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
     padding:24px;
-
     background:
-        radial-gradient(
-            circle at 50% 20%,
-            rgba(139,92,246,.18),
-            transparent 35%
-        ),
-        #080a0f;
-
-    z-index:100;
+        radial-gradient(circle at 20% 10%,rgba(118,87,255,.16),transparent 32%),
+        radial-gradient(circle at 90% 85%,rgba(36,214,162,.08),transparent 30%),
+        var(--bg);
 }
 
 .login-card{
-    width:min(440px,100%);
-
-    background:rgba(16,19,27,.92);
-
-    border:1px solid #2a3040;
-
-    border-radius:24px;
-
-    padding:34px;
-
+    position:relative;
+    width:min(450px,100%);
+    padding:38px;
+    border:1px solid var(--line2);
+    border-radius:26px;
+    background:linear-gradient(145deg,rgba(20,27,40,.97),rgba(8,12,19,.98));
     box-shadow:var(--shadow);
-
-    backdrop-filter:blur(20px);
+    overflow:hidden;
 }
 
-.brand{
+.login-card:before{
+    content:"";
+    position:absolute;
+    width:240px;
+    height:240px;
+    border-radius:50%;
+    background:rgba(118,87,255,.15);
+    filter:blur(70px);
+    right:-100px;
+    top:-120px;
+    pointer-events:none;
+}
+
+.login-logo{
+    position:relative;
     display:flex;
     align-items:center;
     gap:13px;
-
-    margin-bottom:26px;
-}
-
-.logo{
-    width:48px;
-    height:48px;
-
-    border-radius:15px;
-
-    display:grid;
-    place-items:center;
-
-    background:
-        linear-gradient(
-            135deg,
-            #a78bfa,
-            #7c3aed
-        );
-
-    box-shadow:
-        0 12px 35px rgba(124,58,237,.35);
-
-    font-size:24px;
-    font-weight:900;
-}
-
-.brand h1{
-    font-size:24px;
-    letter-spacing:.08em;
-}
-
-.brand p{
-    color:var(--muted);
-    font-size:12px;
-    margin-top:3px;
-}
-
-.login-card h2{
-    font-size:25px;
     margin-bottom:8px;
 }
 
-.login-sub{
+.logo-mark{
+    width:44px;
+    height:44px;
+    display:grid;
+    place-items:center;
+    border-radius:14px;
+    background:linear-gradient(135deg,var(--accent),#4d36ce);
+    box-shadow:0 10px 30px rgba(118,87,255,.35);
+}
+
+.logo-mark i{
+    font-size:20px;
+}
+
+.login-logo h1{
+    font-size:27px;
+    letter-spacing:3px;
+}
+
+.login-subtitle{
     color:var(--muted);
     font-size:13px;
-    margin-bottom:24px;
+    line-height:1.6;
+    margin-bottom:28px;
 }
 
 .field{
-    margin-bottom:15px;
+    margin-bottom:17px;
 }
 
 .field label{
     display:block;
-
+    color:#aab3c2;
     font-size:11px;
-
+    font-weight:700;
     text-transform:uppercase;
-
-    letter-spacing:.08em;
-
-    color:var(--muted);
-
-    font-weight:800;
-
-    margin-bottom:7px;
+    letter-spacing:.09em;
+    margin-bottom:8px;
 }
 
-.input,
-.select{
+.field input,
+.field select{
     width:100%;
     height:46px;
-
-    background:#0b0e14;
-
-    border:1px solid #2a3040;
-
-    border-radius:11px;
-
-    color:var(--text);
-
-    padding:0 13px;
-
+    padding:0 14px;
+    border-radius:12px;
+    border:1px solid var(--line2);
     outline:none;
-
-    transition:.18s;
+    color:#fff;
+    background:#080d15;
+    transition:.2s;
 }
 
-.input:focus,
-.select:focus{
-    border-color:#8b5cf6;
-
-    box-shadow:
-        0 0 0 3px rgba(139,92,246,.13);
+.field input:focus,
+.field select:focus{
+    border-color:rgba(118,87,255,.7);
+    box-shadow:0 0 0 4px rgba(118,87,255,.1);
 }
 
-.color-row{
-    display:flex;
-    gap:8px;
-}
-
-.color{
-    width:30px;
-    height:30px;
-
-    border-radius:50%;
-
-    border:2px solid transparent;
-
-    outline:none;
-}
-
-.color.active{
-    border-color:white;
-
-    box-shadow:
-        0 0 0 2px #8b5cf6;
-}
-
-.login-btn{
+.login-button{
     width:100%;
     height:48px;
-
     border:0;
-
     border-radius:12px;
-
-    background:
-        linear-gradient(
-            135deg,
-            #a78bfa,
-            #7c3aed
-        );
-
-    color:white;
-
-    font-weight:800;
-
-    margin-top:7px;
-
-    box-shadow:
-        0 12px 28px rgba(124,58,237,.25);
-
-    transition:.18s;
+    color:#fff;
+    font-weight:700;
+    background:linear-gradient(135deg,var(--accent2),#6243e8);
+    box-shadow:0 12px 30px rgba(118,87,255,.25);
+    transition:.2s;
 }
 
-.login-btn:hover{
+.login-button:hover{
     transform:translateY(-1px);
-    filter:brightness(1.07);
+    filter:brightness(1.06);
+}
+
+.login-button:disabled{
+    opacity:.6;
+    cursor:not-allowed;
 }
 
 .login-error{
-    min-height:18px;
-
-    color:#f87171;
-
-    font-size:12px;
-
-    margin-top:10px;
-
-    text-align:center;
-}
-
-.hint{
-    color:#5f6878;
-
-    font-size:11px;
-
-    text-align:center;
-
-    margin-top:16px;
-}
-
-
-/* =========================================================
-   APP
-========================================================= */
-
-#app{
     display:none;
-
-    width:100%;
-    height:100%;
-
-    grid-template-columns:
-        250px
-        minmax(0,1fr)
-        230px;
-
-    background:var(--bg);
+    margin-top:12px;
+    padding:11px 12px;
+    border-radius:10px;
+    color:#ff8696;
+    background:rgba(255,88,112,.08);
+    border:1px solid rgba(255,88,112,.15);
+    font-size:12px;
 }
 
-.sidebar{
-    min-width:0;
-
-    background:rgba(14,17,24,.96);
-
-    border-right:1px solid var(--line);
-
+.permission-note{
     display:flex;
-
-    flex-direction:column;
+    gap:8px;
+    align-items:flex-start;
+    margin-top:16px;
+    color:var(--muted2);
+    font-size:11px;
+    line-height:1.5;
 }
 
-.sidebar-header{
-    height:64px;
-
-    padding:12px 14px;
-
-    border-bottom:1px solid var(--line);
-
-    display:flex;
-
-    align-items:center;
-
-    gap:10px;
-}
-
-.mini-logo{
-    width:36px;
-    height:36px;
-
-    border-radius:11px;
-
-    display:grid;
-    place-items:center;
-
-    background:
-        linear-gradient(
-            135deg,
-            #a78bfa,
-            #6d28d9
-        );
-
-    font-weight:900;
-}
-
-.sidebar-header strong{
-    font-size:14px;
-}
-
-.sidebar-header span{
-    display:block;
-
-    color:var(--muted);
-
-    font-size:10px;
-
+.permission-note i{
+    color:var(--green);
     margin-top:2px;
 }
 
-.server-dot{
-    margin-left:auto;
+/* =========================
+   APP
+========================= */
 
-    width:9px;
-    height:9px;
-
-    border-radius:50%;
-
-    background:#f59e0b;
-
-    box-shadow:
-        0 0 10px rgba(245,158,11,.6);
+#app{
+    width:100%;
+    height:100%;
+    display:none;
 }
 
-.server-dot.online{
-    background:#22c55e;
-
-    box-shadow:
-        0 0 10px rgba(34,197,94,.6);
+.app-shell{
+    display:flex;
+    width:100%;
+    height:100%;
 }
 
-.server-dot.offline{
-    background:#ef4444;
+/* =========================
+   SIDEBAR
+========================= */
 
-    box-shadow:
-        0 0 10px rgba(239,68,68,.5);
+.sidebar{
+    width:285px;
+    flex:0 0 285px;
+    display:flex;
+    flex-direction:column;
+    background:linear-gradient(180deg,#0c1119,#080c12);
+    border-right:1px solid var(--line);
 }
 
-.side-scroll{
+.brand{
+    height:70px;
+    padding:0 17px;
+    display:flex;
+    align-items:center;
+    gap:11px;
+    border-bottom:1px solid var(--line);
+}
+
+.brand-icon{
+    width:36px;
+    height:36px;
+    border-radius:11px;
+    display:grid;
+    place-items:center;
+    background:linear-gradient(135deg,var(--accent),#4d36ce);
+}
+
+.brand strong{
+    font-size:17px;
+    letter-spacing:2px;
+}
+
+.brand small{
+    display:block;
+    color:var(--muted2);
+    font-size:9px;
+    margin-top:2px;
+}
+
+.sidebar-content{
     flex:1;
-
-    overflow:auto;
-
-    padding:14px 10px;
+    overflow-y:auto;
+    padding:15px 11px 100px;
 }
 
 .section-label{
+    padding:7px 9px;
+    color:#5f6a7c;
     font-size:10px;
-
-    color:#697386;
-
-    text-transform:uppercase;
-
+    font-weight:800;
     letter-spacing:.12em;
-
-    font-weight:900;
-
-    padding:8px 8px;
+    text-transform:uppercase;
 }
 
 .room{
-    display:flex;
-
-    align-items:center;
-
-    gap:10px;
-
     width:100%;
-    height:39px;
-
-    border:0;
-
+    min-height:43px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:9px 10px;
+    border-radius:10px;
+    border:1px solid transparent;
     background:transparent;
-
-    color:#8f99aa;
-
-    border-radius:9px;
-
-    padding:0 10px;
-
+    color:#8d98aa;
     text-align:left;
-
-    transition:.15s;
-
-    margin:2px 0;
+    transition:.18s;
 }
 
 .room:hover{
-    background:#181d27;
-    color:#e9edf4;
+    color:#fff;
+    background:rgba(255,255,255,.045);
 }
 
 .room.active{
-    background:
-        linear-gradient(
-            90deg,
-            rgba(139,92,246,.18),
-            rgba(139,92,246,.06)
-        );
-
     color:#fff;
-
-    box-shadow:
-        inset 3px 0 #8b5cf6;
+    background:rgba(118,87,255,.12);
+    border-color:rgba(118,87,255,.22);
 }
 
-.room-icon{
-    width:18px;
+.room i{
+    width:20px;
     text-align:center;
-
-    color:#697386;
+    color:#727e90;
 }
 
-.room.active .room-icon{
-    color:#a78bfa;
-}
-
-.room-name{
-    font-size:13px;
-    font-weight:650;
-}
-
-.room-badge{
-    margin-left:auto;
-
-    min-width:19px;
-    height:19px;
-
-    border-radius:10px;
-
-    padding:0 5px;
-
-    display:grid;
-    place-items:center;
-
-    background:#ef4444;
-
-    color:#fff;
-
-    font-size:10px;
-
-    font-weight:900;
+.room.active i{
+    color:#aa9cff;
 }
 
 .voice-room{
-    margin:3px 0 8px;
+    margin-bottom:3px;
 }
 
 .voice-room-head{
+    width:100%;
     display:flex;
-
     align-items:center;
-
-    gap:9px;
-
-    padding:8px 10px;
-
-    border-radius:9px;
-
-    color:#8993a5;
-
-    font-size:12px;
-
-    cursor:pointer;
+    gap:10px;
 }
 
-.voice-room-head:hover{
-    background:#181d27;
-    color:white;
-}
-
-.voice-room-head.joined{
-    color:#fff;
-
-    background:
-        rgba(34,197,94,.09);
+.voice-room-name{
+    flex:1;
 }
 
 .voice-users{
-    padding:
-        0
-        8px
-        2px
-        35px;
+    margin:0 9px 6px 39px;
+    display:flex;
+    flex-direction:column;
+    gap:3px;
 }
 
 .voice-user{
-    font-size:11px;
-
-    color:#7fd99b;
-
-    padding:3px 0;
-
     display:flex;
-
     align-items:center;
-
-    gap:6px;
-
-    white-space:nowrap;
-
-    overflow:hidden;
-
-    text-overflow:ellipsis;
+    gap:7px;
+    color:#8c98a9;
+    font-size:11px;
+    min-height:20px;
 }
 
-.voice-user::before{
+.voice-user:before{
     content:"";
-
     width:6px;
     height:6px;
-
     border-radius:50%;
-
-    background:#22c55e;
-
-    flex:0 0 auto;
+    background:var(--green);
+    box-shadow:0 0 8px rgba(36,214,162,.55);
 }
 
-.profile{
-    border-top:1px solid var(--line);
-
-    padding:11px 10px;
-
-    background:#0c0f15;
+.voice-user.speaking{
+    color:#fff;
 }
 
-.profile-row{
+.voice-user.speaking:before{
+    transform:scale(1.3);
+    box-shadow:0 0 12px rgba(36,214,162,.9);
+}
+
+.voice-timer{
+    display:none;
+    color:#67e9c5;
+    font-family:monospace;
+    font-size:10px;
+}
+
+.members-title{
+    margin-top:18px;
+}
+
+.member-list{
     display:flex;
+    flex-direction:column;
+    gap:2px;
+}
 
+.member{
+    display:flex;
     align-items:center;
-
     gap:9px;
+    min-height:39px;
+    padding:6px 9px;
+    border-radius:9px;
+    transition:.15s;
+}
+
+.member:hover{
+    background:rgba(255,255,255,.035);
+}
+
+.member-avatar{
+    width:27px;
+    height:27px;
+    flex:0 0 27px;
+    display:grid;
+    place-items:center;
+    border-radius:9px;
+    color:#fff;
+    font-size:11px;
+    font-weight:800;
+}
+
+.member-name{
+    flex:1;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-size:12px;
+    font-weight:600;
+}
+
+.member-status{
+    width:7px;
+    height:7px;
+    border-radius:50%;
+    background:#4b5667;
+}
+
+.member.speaking{
+    background:rgba(36,214,162,.08);
+}
+
+.member.speaking .member-status{
+    background:var(--green);
+    box-shadow:0 0 10px rgba(36,214,162,.9);
+}
+
+/* =========================
+   USER PANEL
+========================= */
+
+.user-panel{
+    position:relative;
+    flex:0 0 auto;
+    padding:11px;
+    border-top:1px solid var(--line);
+    background:rgba(12,17,25,.96);
+}
+
+.user-main{
+    display:flex;
+    align-items:center;
+    gap:9px;
+}
+
+.user-avatar{
+    width:32px;
+    height:32px;
+    display:grid;
+    place-items:center;
+    border-radius:10px;
+    color:#fff;
+    font-size:12px;
+    font-weight:800;
+}
+
+.user-details{
+    flex:1;
+    min-width:0;
+}
+
+.user-details strong{
+    display:block;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-size:12px;
+}
+
+.user-details small{
+    display:flex;
+    align-items:center;
+    gap:5px;
+    color:var(--green);
+    font-size:9px;
+    margin-top:2px;
+}
+
+.user-details small span{
+    width:5px;
+    height:5px;
+    border-radius:50%;
+    background:var(--green);
+}
+
+.control-row{
+    display:flex;
+    gap:5px;
+    margin-top:9px;
+}
+
+.control{
+    flex:1;
+    height:34px;
+    border:1px solid var(--line);
+    border-radius:9px;
+    color:#9ba5b5;
+    background:rgba(255,255,255,.025);
+}
+
+.control:hover{
+    color:#fff;
+    background:rgba(255,255,255,.07);
+}
+
+.control.active{
+    color:#ff7183;
+    background:rgba(255,88,112,.09);
+    border-color:rgba(255,88,112,.2);
+}
+
+.control.leave{
+    color:#ff7183;
+}
+
+.control.leave:hover{
+    background:rgba(255,88,112,.1);
+}
+
+/* =========================
+   MAIN
+========================= */
+
+.main{
+    flex:1;
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+    background:
+        radial-gradient(circle at 80% 0%,rgba(118,87,255,.055),transparent 30%),
+        #090d14;
+}
+
+.header{
+    height:70px;
+    flex:0 0 70px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 22px;
+    border-bottom:1px solid var(--line);
+    background:rgba(10,14,21,.84);
+    backdrop-filter:blur(18px);
+}
+
+.channel-info{
+    display:flex;
+    align-items:center;
+    gap:11px;
+    min-width:0;
+}
+
+.channel-icon{
+    width:38px;
+    height:38px;
+    display:grid;
+    place-items:center;
+    border-radius:11px;
+    color:#b5a9ff;
+    background:rgba(118,87,255,.12);
+    border:1px solid rgba(118,87,255,.17);
+}
+
+.channel-info h2{
+    font-size:15px;
+}
+
+.channel-info p{
+    margin-top:3px;
+    color:var(--muted2);
+    font-size:10px;
+}
+
+.header-right{
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.connection{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    height:31px;
+    padding:0 10px;
+    border:1px solid var(--line);
+    border-radius:999px;
+    color:#8792a3;
+    font-size:10px;
+}
+
+.connection-dot{
+    width:7px;
+    height:7px;
+    border-radius:50%;
+    background:var(--yellow);
+}
+
+.connection.online .connection-dot{
+    background:var(--green);
+    box-shadow:0 0 8px rgba(36,214,162,.6);
+}
+
+.mic-status{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    color:#768194;
+    font-size:10px;
+}
+
+.mic-meter{
+    width:58px;
+    height:5px;
+    overflow:hidden;
+    border-radius:99px;
+    background:#202938;
+}
+
+.mic-meter-fill{
+    width:0%;
+    height:100%;
+    border-radius:99px;
+    background:var(--green);
+    transition:width .05s linear;
+}
+
+/* =========================
+   MEDIA AREA
+========================= */
+
+.media-area{
+    display:none;
+    flex-wrap:wrap;
+    gap:12px;
+    padding:14px;
+    max-height:52vh;
+    overflow:auto;
+    background:#05070b;
+    border-bottom:1px solid var(--line);
+}
+
+.media-area.visible{
+    display:flex;
+}
+
+.media-card{
+    position:relative;
+    flex:1 1 430px;
+    min-width:300px;
+    max-width:900px;
+    overflow:hidden;
+    border:1px solid var(--line2);
+    border-radius:15px;
+    background:#000;
+}
+
+.media-card video{
+    display:block;
+    width:100%;
+    max-height:45vh;
+    object-fit:contain;
+    background:#000;
+}
+
+.media-footer{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:8px 11px;
+    background:#10151e;
+}
+
+.media-title{
+    font-size:11px;
+    font-weight:700;
+}
+
+.media-tools{
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.media-tools input{
+    width:70px;
+}
+
+.media-tools button{
+    height:27px;
+    padding:0 8px;
+    border:1px solid var(--line2);
+    border-radius:7px;
+    color:#ccd3df;
+    background:#181f2b;
+    font-size:10px;
+}
+
+/* =========================
+   CHAT
+========================= */
+
+.messages{
+    flex:1;
+    min-height:0;
+    overflow-y:auto;
+    padding:20px clamp(16px,4vw,55px);
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+    scroll-behavior:smooth;
+}
+
+.message{
+    display:flex;
+    gap:11px;
+    padding:9px 11px;
+    border-radius:12px;
+    transition:.12s;
+}
+
+.message:hover{
+    background:rgba(255,255,255,.028);
+}
+
+.message.system{
+    opacity:.65;
 }
 
 .avatar{
     width:34px;
     height:34px;
-
-    border-radius:11px;
-
+    flex:0 0 34px;
     display:grid;
     place-items:center;
-
+    border-radius:10px;
     color:#fff;
-
-    font-weight:900;
-
-    font-size:12px;
-
-    flex:0 0 auto;
-
-    position:relative;
-}
-
-.avatar.online::after{
-    content:"";
-
-    position:absolute;
-
-    right:-2px;
-    bottom:-2px;
-
-    width:9px;
-    height:9px;
-
-    border-radius:50%;
-
-    background:#22c55e;
-
-    border:2px solid #0c0f15;
-}
-
-.profile-text{
-    min-width:0;
-
-    flex:1;
-}
-
-.profile-text strong{
-    display:block;
-
-    font-size:12px;
-
-    white-space:nowrap;
-
-    overflow:hidden;
-
-    text-overflow:ellipsis;
-}
-
-.profile-text small{
-    color:#667084;
-
-    font-size:10px;
-}
-
-.profile-actions{
-    display:flex;
-    gap:2px;
-}
-
-.icon{
-    width:31px;
-    height:31px;
-
-    border:0;
-
-    background:transparent;
-
-    color:#8791a2;
-
-    border-radius:8px;
-
-    display:grid;
-
-    place-items:center;
-}
-
-.icon:hover{
-    background:#1c222d;
-    color:white;
-}
-
-.icon.danger:hover{
-    color:#f87171;
-    background:rgba(239,68,68,.1);
-}
-
-
-/* =========================================================
-   CHAT
-========================================================= */
-
-.chat{
-    min-width:0;
-
-    display:flex;
-
-    flex-direction:column;
-
-    position:relative;
-
-    background:
-        linear-gradient(
-            180deg,
-            #0d1017,
-            #0b0d12
-        );
-}
-
-.topbar{
-    height:64px;
-
-    flex:0 0 auto;
-
-    border-bottom:1px solid var(--line);
-
-    display:flex;
-
-    align-items:center;
-
-    padding:0 18px;
-
-    gap:12px;
-
-    background:rgba(13,16,23,.88);
-
-    backdrop-filter:blur(14px);
-
-    z-index:3;
-}
-
-.room-symbol{
-    font-size:24px;
-    color:#647086;
-}
-
-.top-title{
-    min-width:0;
-}
-
-.top-title h2{
-    font-size:15px;
-}
-
-.top-title p{
-    font-size:10px;
-
-    color:#667084;
-
-    margin-top:2px;
-
-    white-space:nowrap;
-
-    overflow:hidden;
-
-    text-overflow:ellipsis;
-}
-
-.top-actions{
-    margin-left:auto;
-
-    display:flex;
-
-    align-items:center;
-
-    gap:4px;
-}
-
-.connection{
-    display:flex;
-
-    align-items:center;
-
-    gap:7px;
-
-    color:#778194;
-
-    font-size:10px;
-
-    padding:0 8px;
-}
-
-.connection i{
-    width:7px;
-    height:7px;
-
-    border-radius:50%;
-
-    background:#f59e0b;
-}
-
-.connection.online i{
-    background:#22c55e;
-}
-
-.connection.offline i{
-    background:#ef4444;
-}
-
-.messages{
-    flex:1;
-
-    min-height:0;
-
-    overflow:auto;
-
-    padding:
-        22px
-        clamp(14px,3vw,38px)
-        18px;
-}
-
-.welcome{
-    padding:
-        6px
-        0
-        22px;
-}
-
-.welcome-mark{
-    width:48px;
-    height:48px;
-
-    border-radius:15px;
-
-    background:#171c26;
-
-    border:1px solid #2b3240;
-
-    display:grid;
-
-    place-items:center;
-
-    color:#a78bfa;
-
-    font-size:24px;
-
-    margin-bottom:12px;
-}
-
-.welcome h3{
-    font-size:22px;
-    margin-bottom:5px;
-}
-
-.welcome p{
-    color:#737e91;
-    font-size:12px;
-}
-
-.message{
-    display:flex;
-
-    gap:11px;
-
-    padding:9px 10px;
-
-    margin:1px -10px;
-
-    border-radius:10px;
-
-    transition:.12s;
-}
-
-.message:hover{
-    background:
-        rgba(255,255,255,.025);
-}
-
-.message .avatar{
-    width:34px;
-    height:34px;
-    border-radius:10px;
-}
-
-.msg-body{
-    min-width:0;
-    flex:1;
-}
-
-.msg-head{
-    display:flex;
-
-    align-items:baseline;
-
-    gap:8px;
-}
-
-.msg-name{
     font-size:12px;
     font-weight:800;
 }
 
-.msg-time{
+.message-content{
+    min-width:0;
+}
+
+.message-meta{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:3px;
+}
+
+.message-user{
+    font-size:12px;
+    font-weight:800;
+}
+
+.message-time{
+    color:#596476;
     font-size:9px;
-    color:#555f70;
 }
 
-.msg-text{
+.message-text{
+    color:#dce1e9;
     font-size:13px;
-
     line-height:1.55;
-
-    color:#d7dce5;
-
     white-space:pre-wrap;
-
     word-break:break-word;
-
-    margin-top:2px;
-}
-
-.system{
-    justify-content:center;
-
-    color:#667084;
-
-    font-size:10px;
-
-    padding:8px;
-}
-
-.system span{
-    background:#11151d;
-
-    border:1px solid #242a35;
-
-    padding:5px 9px;
-
-    border-radius:999px;
 }
 
 .typing{
     height:22px;
-
-    flex:0 0 auto;
-
-    padding:0 25px;
-
-    color:#707b8e;
-
+    padding:0 clamp(17px,4vw,56px);
+    color:#7d899b;
     font-size:10px;
-
     font-style:italic;
 }
 
 .composer{
-    padding:
-        8px
-        clamp(12px,2.5vw,32px)
-        16px;
+    padding:8px clamp(15px,4vw,54px) 17px;
 }
 
-.compose-wrap{
+.composer-form{
     display:flex;
-
-    align-items:flex-end;
-
     gap:8px;
-
-    background:#151922;
-
-    border:1px solid #2a3040;
-
-    border-radius:13px;
-
-    padding:
-        7px
-        7px
-        7px
-        13px;
-
-    box-shadow:
-        0 10px 30px rgba(0,0,0,.12);
+    padding:6px;
+    border:1px solid var(--line2);
+    border-radius:14px;
+    background:#111721;
+    box-shadow:0 15px 40px rgba(0,0,0,.18);
 }
 
-.compose-wrap:focus-within{
-    border-color:#4b3a75;
+.composer-form:focus-within{
+    border-color:rgba(118,87,255,.45);
+    box-shadow:0 0 0 3px rgba(118,87,255,.07),0 15px 40px rgba(0,0,0,.18);
 }
 
-.attach{
-    width:32px;
-    height:32px;
-
-    border:0;
-
-    background:transparent;
-
-    color:#697386;
-}
-
-.attach:hover{
-    color:white;
-}
-
-.message-input{
+.composer input{
     flex:1;
-
     min-width:0;
-
-    resize:none;
-
-    max-height:130px;
-
-    min-height:32px;
-
-    line-height:20px;
-
-    background:transparent;
-
+    height:40px;
+    padding:0 10px;
     border:0;
-
     outline:0;
-
-    color:white;
-
-    font-size:13px;
-
-    padding:6px 0;
+    color:#fff;
+    background:transparent;
 }
 
 .send{
-    width:36px;
-    height:36px;
-
+    min-width:75px;
     border:0;
-
     border-radius:10px;
-
-    background:#8b5cf6;
-
-    color:white;
-
-    font-weight:900;
-}
-
-.send:hover{
-    filter:brightness(1.1);
-}
-
-.send:disabled{
-    opacity:.35;
-
-    cursor:not-allowed;
-}
-
-.hint-row{
-    font-size:9px;
-
-    color:#4e5869;
-
-    padding:
-        6px
-        3px
-        0;
-}
-
-
-/* =========================================================
-   RIGHT MEMBERS
-========================================================= */
-
-.members{
-    background:#0d1016;
-
-    border-left:1px solid var(--line);
-
-    min-width:0;
-
-    display:flex;
-
-    flex-direction:column;
-}
-
-.members-head{
-    height:64px;
-
-    padding:0 15px;
-
-    display:flex;
-
-    align-items:center;
-
-    border-bottom:1px solid var(--line);
-}
-
-.members-head strong{
-    font-size:11px;
-
-    text-transform:uppercase;
-
-    letter-spacing:.1em;
-
-    color:#697386;
-}
-
-.member-list{
-    overflow:auto;
-
-    padding:13px 10px;
-}
-
-.member{
-    display:flex;
-
-    align-items:center;
-
-    gap:9px;
-
-    padding:7px;
-
-    border-radius:9px;
-}
-
-.member:hover{
-    background:#171c25;
-}
-
-.member .avatar{
-    width:31px;
-    height:31px;
-    border-radius:9px;
-}
-
-.member-info{
-    min-width:0;
-}
-
-.member-info strong{
-    display:block;
-
-    font-size:11px;
-
-    white-space:nowrap;
-
-    overflow:hidden;
-
-    text-overflow:ellipsis;
-}
-
-.member-info small{
-    font-size:9px;
-    color:#5e6879;
-}
-
-.member.speaking{
-    background:
-        rgba(34,197,94,.07);
-
-    box-shadow:
-        inset 2px 0 #22c55e;
-}
-
-.member.speaking .avatar{
-    box-shadow:
-        0 0 0 2px #22c55e,
-        0 0 15px rgba(34,197,94,.35);
-}
-
-
-/* =========================================================
-   VIDEO
-========================================================= */
-
-.video-area{
-    display:none;
-
-    flex:0 0 auto;
-
-    max-height:48%;
-
-    padding:12px;
-
-    background:#07090d;
-
-    border-bottom:1px solid var(--line);
-
-    gap:10px;
-
-    overflow:auto;
-
-    flex-wrap:wrap;
-
-    justify-content:center;
-}
-
-.video-area.open{
-    display:flex;
-}
-
-.video-card{
-    position:relative;
-
-    width:min(520px,100%);
-
-    background:#0c0f15;
-
-    border:1px solid #252c38;
-
-    border-radius:12px;
-
-    overflow:hidden;
-
-    box-shadow:
-        0 12px 35px rgba(0,0,0,.25);
-}
-
-.video-card video{
-    display:block;
-
-    width:100%;
-
-    aspect-ratio:16/9;
-
-    object-fit:contain;
-
-    background:#020305;
-}
-
-.video-label{
-    position:absolute;
-
-    left:9px;
-    top:9px;
-
-    background:rgba(0,0,0,.65);
-
-    backdrop-filter:blur(8px);
-
-    padding:5px 8px;
-
-    border-radius:7px;
-
-    font-size:10px;
-}
-
-.video-tools{
-    display:flex;
-
-    align-items:center;
-
-    gap:7px;
-
-    padding:6px 8px;
-}
-
-.video-tools input{
-    width:80px;
-}
-
-.video-tools button{
-    margin-left:auto;
-
-    background:#1b212b;
-
-    color:#ddd;
-
-    border:0;
-
-    border-radius:7px;
-
-    padding:5px 8px;
-
-    font-size:10px;
-}
-
-
-/* =========================================================
-   CALL BAR
-========================================================= */
-
-.callbar{
-    display:none;
-
-    position:absolute;
-
-    left:50%;
-
-    bottom:76px;
-
-    transform:translateX(-50%);
-
-    background:rgba(14,17,23,.95);
-
-    border:1px solid #2d3441;
-
-    padding:7px;
-
-    border-radius:15px;
-
-    box-shadow:
-        0 18px 50px rgba(0,0,0,.45);
-
-    gap:5px;
-
-    z-index:8;
-}
-
-.callbar.show{
-    display:flex;
-}
-
-.callbtn{
-    width:40px;
-    height:40px;
-
-    border:0;
-
-    border-radius:11px;
-
-    background:#1b212b;
-
-    color:#d8dee8;
-}
-
-.callbtn:hover{
-    background:#28303c;
-    color:white;
-}
-
-.callbtn.active{
-    background:
-        rgba(239,68,68,.18);
-
-    color:#f87171;
-}
-
-.callbtn.end{
-    background:#ef4444;
     color:#fff;
+    background:linear-gradient(135deg,var(--accent2),#6140e6);
+    font-size:12px;
+    font-weight:700;
 }
 
-.callbtn.end:hover{
-    background:#dc2626;
-}
+/* =========================
+   VOICE BAR
+========================= */
 
-
-/* =========================================================
-   MODALS
-========================================================= */
-
-.modal{
-    position:fixed;
-
-    inset:0;
-
-    background:rgba(0,0,0,.65);
-
-    backdrop-filter:blur(6px);
-
+.voice-bar{
     display:none;
-
-    place-items:center;
-
-    z-index:50;
-
-    padding:20px;
-}
-
-.modal.show{
-    display:grid;
-}
-
-.modal-card{
-    width:min(460px,100%);
-
-    background:#12161e;
-
-    border:1px solid #2a3040;
-
-    border-radius:18px;
-
-    box-shadow:var(--shadow);
-
-    padding:22px;
-}
-
-.modal-head{
-    display:flex;
-
     align-items:center;
-
-    justify-content:space-between;
-
-    margin-bottom:18px;
+    gap:10px;
+    min-height:58px;
+    padding:8px 16px;
+    border-top:1px solid var(--line);
+    background:rgba(10,14,21,.97);
 }
 
-.modal-head h3{
-    font-size:16px;
+.voice-bar.active{
+    display:flex;
 }
 
-.modal-close{
+.voice-state{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    min-width:180px;
+}
+
+.voice-state-icon{
     width:32px;
     height:32px;
-
-    border:0;
-
-    border-radius:8px;
-
-    background:#1b202a;
-
-    color:#a1a9b7;
+    display:grid;
+    place-items:center;
+    border-radius:9px;
+    color:var(--green);
+    background:rgba(36,214,162,.09);
 }
 
-.setting{
-    padding:12px 0;
-
-    border-bottom:1px solid #222936;
-}
-
-.setting:last-child{
-    border-bottom:0;
-}
-
-.setting strong{
+.voice-state strong{
     display:block;
+    font-size:11px;
+}
 
+.voice-state small{
+    color:#657184;
+    font-size:9px;
+}
+
+.voice-actions{
+    display:flex;
+    gap:6px;
+    margin-left:auto;
+}
+
+.voice-action{
+    width:36px;
+    height:36px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    color:#a7b0be;
+    background:#141a24;
+}
+
+.voice-action:hover{
+    color:#fff;
+    background:#1a2230;
+}
+
+.voice-action.active{
+    color:#ff7183;
+    background:rgba(255,88,112,.09);
+    border-color:rgba(255,88,112,.22);
+}
+
+.voice-action.screen.active{
+    color:#a899ff;
+    border-color:rgba(118,87,255,.3);
+    background:rgba(118,87,255,.1);
+}
+
+/* =========================
+   CONTEXT MENU
+========================= */
+
+.context{
+    position:fixed;
+    z-index:9999;
+    display:none;
+    width:210px;
+    padding:13px;
+    border:1px solid var(--line2);
+    border-radius:13px;
+    background:#111720;
+    box-shadow:var(--shadow);
+}
+
+.context h4{
+    margin-bottom:10px;
     font-size:12px;
 }
 
-.setting p{
+.context label{
+    color:#929daf;
     font-size:10px;
-
-    color:#687386;
-
-    margin-top:3px;
 }
 
-.switch{
-    margin-left:auto;
-
-    width:42px;
-    height:23px;
-
-    border:0;
-
-    border-radius:20px;
-
-    background:#343b49;
-
-    position:relative;
-}
-
-.switch::after{
-    content:"";
-
-    position:absolute;
-
-    top:3px;
-    left:3px;
-
-    width:17px;
-    height:17px;
-
-    border-radius:50%;
-
-    background:white;
-
-    transition:.18s;
-}
-
-.switch.on{
-    background:#8b5cf6;
-}
-
-.switch.on::after{
-    left:22px;
-}
-
-.setting-row{
-    display:flex;
-
-    align-items:center;
-
-    gap:12px;
-}
-
-.range{
+.context input{
     width:100%;
+    margin-top:7px;
 }
 
+/* =========================
+   DEVICE MODAL
+========================= */
 
-/* =========================================================
-   TOAST / SEARCH
-========================================================= */
-
-.toast{
+.modal-backdrop{
     position:fixed;
-
-    right:20px;
-    bottom:20px;
-
-    z-index:80;
-
-    background:#171c25;
-
-    border:1px solid #303746;
-
-    border-radius:12px;
-
-    padding:11px 14px;
-
-    color:#e8edf5;
-
-    font-size:11px;
-
-    box-shadow:var(--shadow);
-
-    opacity:0;
-
-    transform:translateY(10px);
-
-    pointer-events:none;
-
-    transition:.2s;
-}
-
-.toast.show{
-    opacity:1;
-    transform:none;
-}
-
-.search-box{
-    display:flex;
-
+    inset:0;
+    z-index:9000;
+    display:none;
     align-items:center;
-
-    gap:7px;
-
-    background:#11151d;
-
-    border:1px solid #292f3b;
-
-    border-radius:9px;
-
-    padding:0 9px;
-
-    height:34px;
+    justify-content:center;
+    padding:20px;
+    background:rgba(0,0,0,.65);
+    backdrop-filter:blur(8px);
 }
 
-.search-box input{
-    width:110px;
+.modal-backdrop.open{
+    display:flex;
+}
 
-    background:transparent;
+.modal{
+    width:min(470px,100%);
+    padding:22px;
+    border:1px solid var(--line2);
+    border-radius:18px;
+    background:#101620;
+    box-shadow:var(--shadow);
+}
 
+.modal-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:18px;
+}
+
+.modal-header h3{
+    font-size:15px;
+}
+
+.modal-close{
+    width:30px;
+    height:30px;
     border:0;
-
-    outline:0;
-
-    color:white;
-
-    font-size:11px;
+    border-radius:8px;
+    color:#8e98a8;
+    background:transparent;
 }
 
-.highlight{
-    background:
-        rgba(139,92,246,.28);
-
-    border-radius:3px;
+.modal-close:hover{
+    background:rgba(255,255,255,.06);
+    color:#fff;
 }
 
-.empty{
-    color:#5f697a;
-
-    text-align:center;
-
-    padding:30px;
-
-    font-size:11px;
+.device-field{
+    margin-bottom:14px;
 }
 
-
-/* =========================================================
-   MOBILE
-========================================================= */
-
-@media(max-width:1050px){
-
-    #app{
-        grid-template-columns:
-            225px
-            minmax(0,1fr);
-    }
-
-    .members{
-        display:none;
-    }
+.device-field label{
+    display:block;
+    color:#8994a6;
+    font-size:10px;
+    font-weight:700;
+    text-transform:uppercase;
+    margin-bottom:7px;
 }
 
-@media(max-width:700px){
+.device-field select{
+    width:100%;
+    height:42px;
+    padding:0 10px;
+    border:1px solid var(--line2);
+    border-radius:10px;
+    outline:none;
+    color:#fff;
+    background:#090e15;
+}
 
-    #app{
-        grid-template-columns:1fr;
-    }
+.test-box{
+    margin-top:10px;
+    padding:13px;
+    border-radius:12px;
+    border:1px solid var(--line);
+    background:#0b1018;
+}
 
+.test-row{
+    display:flex;
+    justify-content:space-between;
+    color:#8d98aa;
+    font-size:10px;
+}
+
+.test-meter{
+    height:8px;
+    margin-top:9px;
+    overflow:hidden;
+    border-radius:99px;
+    background:#202938;
+}
+
+.test-fill{
+    width:0%;
+    height:100%;
+    background:var(--green);
+    transition:width .05s linear;
+}
+
+.modal-save{
+    width:100%;
+    height:42px;
+    margin-top:15px;
+    border:0;
+    border-radius:10px;
+    color:#fff;
+    background:linear-gradient(135deg,var(--accent2),#6244e8);
+    font-size:12px;
+    font-weight:700;
+}
+
+/* =========================
+   SCROLLBARS
+========================= */
+
+*::-webkit-scrollbar{
+    width:7px;
+    height:7px;
+}
+
+*::-webkit-scrollbar-track{
+    background:transparent;
+}
+
+*::-webkit-scrollbar-thumb{
+    background:#273041;
+    border-radius:99px;
+}
+
+*::-webkit-scrollbar-thumb:hover{
+    background:#344055;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media(max-width:850px){
     .sidebar{
-        position:fixed;
-
-        left:0;
-        top:0;
-        bottom:0;
-
-        width:280px;
-
-        z-index:20;
-
-        transform:translateX(-102%);
-
-        transition:.22s;
-
-        box-shadow:
-            20px 0 50px rgba(0,0,0,.4);
+        width:235px;
+        flex-basis:235px;
     }
 
-    .sidebar.open{
-        transform:none;
-    }
-
-    .mobile-menu{
-        display:grid!important;
-    }
-
-    .topbar{
-        padding:0 10px;
-    }
-
-    .top-actions .search-box{
+    .mic-status{
         display:none;
-    }
-
-    .messages{
-        padding-left:12px;
-        padding-right:12px;
     }
 
     .message{
-        margin:1px -4px;
-    }
-
-    .composer{
-        padding-left:9px;
-        padding-right:9px;
-    }
-
-    .callbar{
-        bottom:72px;
-    }
-
-    .video-area{
-        max-height:42%;
-    }
-
-    .login-card{
-        padding:25px;
+        padding-left:6px;
+        padding-right:6px;
     }
 }
 
-.mobile-menu{
-    display:none;
+@media(max-width:650px){
+    .sidebar{
+        width:66px;
+        flex-basis:66px;
+    }
 
-    width:34px;
-    height:34px;
+    .brand{
+        justify-content:center;
+        padding:0;
+    }
 
-    border:0;
+    .brand-text,
+    .section-label,
+    .room span,
+    .voice-users,
+    .member-name,
+    .user-details,
+    .user-main > .user-avatar{
+        display:none;
+    }
 
-    border-radius:8px;
+    .sidebar-content{
+        padding-left:8px;
+        padding-right:8px;
+    }
 
-    background:#171c25;
+    .room{
+        justify-content:center;
+        padding:10px 0;
+    }
 
-    color:white;
+    .room i{
+        width:auto;
+    }
 
-    place-items:center;
+    .voice-room-head{
+        justify-content:center;
+    }
+
+    .member{
+        justify-content:center;
+    }
+
+    .user-panel{
+        padding:7px;
+    }
+
+    .control-row{
+        flex-direction:column;
+    }
+
+    .header{
+        padding:0 11px;
+    }
+
+    .header-right{
+        gap:3px;
+    }
+
+    .connection{
+        padding:0 7px;
+    }
+
+    .voice-state{
+        min-width:0;
+    }
+
+    .voice-state div{
+        display:none;
+    }
+
+    .composer{
+        padding-left:8px;
+        padding-right:8px;
+    }
+
+    .messages{
+        padding-left:9px;
+        padding-right:9px;
+    }
 }
 </style>
 </head>
 
 <body>
 
-<!-- =======================================================
+<!-- =========================
      LOGIN
-======================================================= -->
+========================= -->
 
 <section id="login-screen">
-
     <div class="login-card">
 
-        <div class="brand">
-
-            <div class="logo">
-                W
+        <div class="login-logo">
+            <div class="logo-mark">
+                <i class="fa-solid fa-layer-group"></i>
             </div>
 
             <div>
                 <h1>WAFFLE</h1>
-                <p>Topluluğun için sade, hızlı, canlı.</p>
             </div>
-
         </div>
 
-        <h2>Sunucuya katıl</h2>
-
-        <p class="login-sub">
-            Kullanıcı adını seç, odanı seç ve sohbete geç.
+        <p class="login-subtitle">
+            Gerçek zamanlı sohbet, düşük gecikmeli ses ve ekran paylaşımı.
+            Ses sistemi tarayıcının gelişmiş yankı ve gürültü engelleme özelliklerini kullanır.
         </p>
 
         <div class="field">
-
             <label>Kullanıcı adı</label>
-
-            <input
-                id="username"
-                class="input"
-                maxlength="24"
-                autocomplete="off"
-                placeholder="Örn. Cinar"
-            >
-
+            <input id="username" maxlength="24" autocomplete="off" placeholder="Örn. Çınar">
         </div>
 
         <div class="field">
-
-            <label>Sunucu şifresi</label>
-
-            <input
-                id="password"
-                class="input"
-                type="password"
-                placeholder="Şifre"
-            >
-
-        </div>
-
-        <div class="field">
-
-            <label>Başlangıç odası</label>
-
-            <select id="start-room" class="select">
-
-                <option>Genel</option>
-                <option>Oyun</option>
-                <option>Müzik</option>
-
+            <label>İsim rengi</label>
+            <select id="color">
+                <option value="#7657ff">Mor</option>
+                <option value="#24d6a2">Yeşil</option>
+                <option value="#4d9cff">Mavi</option>
+                <option value="#ff5870">Kırmızı</option>
+                <option value="#f2bd55">Sarı</option>
+                <option value="#ec72d8">Pembe</option>
+                <option value="#36c6dc">Turkuaz</option>
             </select>
-
         </div>
 
         <div class="field">
-
-            <label>Profil rengi</label>
-
-            <div class="color-row" id="color-row"></div>
-
+            <label>Sunucu şifresi</label>
+            <input id="password" type="password" autocomplete="off" placeholder="Şifre">
         </div>
 
-        <button id="login-btn" class="login-btn">
-            WAFFLE'a Gir
+        <div class="field">
+            <label>Sohbet odası</label>
+            <select id="room">
+                <option value="Genel"># Genel</option>
+                <option value="Oyun"># Oyun</option>
+                <option value="Müzik"># Müzik</option>
+            </select>
+        </div>
+
+        <button id="login-button" class="login-button">
+            <i class="fa-solid fa-arrow-right"></i>
+            WAFFLE'a Katıl
         </button>
 
         <div id="login-error" class="login-error"></div>
 
-        <div class="hint">
-            Enter ile giriş yapabilirsin · Varsayılan sunucu şifresi: 123456
+        <div class="permission-note">
+            <i class="fa-solid fa-microphone"></i>
+            <span>
+                Ses kanalına girdiğinde tarayıcı mikrofon izni isteyebilir.
+                Yankı engelleme ve gürültü azaltma otomatik olarak etkinleştirilir.
+            </span>
         </div>
 
     </div>
-
 </section>
 
+<!-- =========================
+     APP
+========================= -->
 
-<!-- =======================================================
-     APPLICATION
-======================================================= -->
+<section id="app">
+<div class="app-shell">
 
-<div id="app">
+    <aside class="sidebar">
 
-    <!-- SIDEBAR -->
-
-    <aside class="sidebar" id="sidebar">
-
-        <div class="sidebar-header">
-
-            <div class="mini-logo">
-                W
+        <div class="brand">
+            <div class="brand-icon">
+                <i class="fa-solid fa-layer-group"></i>
             </div>
 
-            <div>
+            <div class="brand-text">
                 <strong>WAFFLE</strong>
-                <span>Community Server</span>
+                <small>REALTIME COMMUNITY</small>
+            </div>
+        </div>
+
+        <div class="sidebar-content">
+
+            <div class="section-label">Sohbet</div>
+
+            <button class="room text-room active" data-room="Genel">
+                <i class="fa-solid fa-hashtag"></i>
+                <span>Genel</span>
+            </button>
+
+            <button class="room text-room" data-room="Oyun">
+                <i class="fa-solid fa-gamepad"></i>
+                <span>Oyun</span>
+            </button>
+
+            <button class="room text-room" data-room="Müzik">
+                <i class="fa-solid fa-music"></i>
+                <span>Müzik</span>
+            </button>
+
+            <div class="section-label">Ses Kanalları</div>
+
+            <div class="voice-room" data-voice="Sesli - Genel">
+                <button class="room voice-room-button">
+                    <div class="voice-room-head">
+                        <i class="fa-solid fa-volume-high"></i>
+                        <span class="voice-room-name">Genel Ses</span>
+                        <span id="timer-general" class="voice-timer">00:00</span>
+                    </div>
+                </button>
+
+                <div id="voice-users-general" class="voice-users"></div>
             </div>
 
-            <div id="server-dot" class="server-dot"></div>
+            <div class="voice-room" data-voice="Sesli - Oyun">
+                <button class="room voice-room-button">
+                    <div class="voice-room-head">
+                        <i class="fa-solid fa-headset"></i>
+                        <span class="voice-room-name">Oyun Ses</span>
+                        <span id="timer-game" class="voice-timer">00:00</span>
+                    </div>
+                </button>
+
+                <div id="voice-users-game" class="voice-users"></div>
+            </div>
+
+            <div class="section-label members-title">
+                Çevrimiçi
+            </div>
+
+            <div id="member-list" class="member-list"></div>
 
         </div>
 
+        <div class="user-panel">
 
-        <div class="side-scroll">
+            <div class="user-main">
+                <div id="my-avatar" class="user-avatar"></div>
 
-            <div class="section-label">
-                Metin kanalları
-            </div>
-
-
-            <button class="room active" data-room="Genel">
-
-                <span class="room-icon">#</span>
-                <span class="room-name">Genel</span>
-                <span class="room-badge hidden"></span>
-
-            </button>
-
-
-            <button class="room" data-room="Oyun">
-
-                <span class="room-icon">#</span>
-                <span class="room-name">Oyun</span>
-                <span class="room-badge hidden"></span>
-
-            </button>
-
-
-            <button class="room" data-room="Müzik">
-
-                <span class="room-icon">#</span>
-                <span class="room-name">Müzik</span>
-                <span class="room-badge hidden"></span>
-
-            </button>
-
-
-            <div
-                class="section-label"
-                style="margin-top:12px"
-            >
-                Ses kanalları
-            </div>
-
-
-            <div
-                class="voice-room"
-                data-voice="Sesli - Genel"
-            >
-
-                <div class="voice-room-head">
-
-                    <span>🔊</span>
-                    <span>Sesli - Genel</span>
-
-                </div>
-
-                <div
-                    class="voice-users"
-                    id="voice-users-general"
-                ></div>
-
-            </div>
-
-
-            <div
-                class="voice-room"
-                data-voice="Sesli - Oyun"
-            >
-
-                <div class="voice-room-head">
-
-                    <span>🔊</span>
-                    <span>Sesli - Oyun</span>
-
-                </div>
-
-                <div
-                    class="voice-users"
-                    id="voice-users-game"
-                ></div>
-
-            </div>
-
-
-            <div
-                class="section-label"
-                style="margin-top:12px"
-            >
-                Kısayollar
-            </div>
-
-            <div
-                style="
-                    padding:6px 10px;
-                    color:#596274;
-                    font-size:10px;
-                    line-height:1.8
-                "
-            >
-                Enter · Mesaj gönder<br>
-                Shift + Enter · Yeni satır<br>
-                Ctrl/⌘ + K · Sohbet ara<br>
-                Esc · Aramayı temizle
-            </div>
-
-        </div>
-
-
-        <div class="profile">
-
-            <div class="profile-row">
-
-                <div
-                    id="my-avatar"
-                    class="avatar online"
-                >
-                    W
-                </div>
-
-                <div class="profile-text">
-
-                    <strong id="my-name">
-                        Kullanıcı
-                    </strong>
-
+                <div class="user-details">
+                    <strong id="my-name">Kullanıcı</strong>
                     <small>
+                        <span></span>
                         Çevrimiçi
                     </small>
-
                 </div>
 
-                <div class="profile-actions">
+                <button id="settings-button" class="control" title="Ses ayarları">
+                    <i class="fa-solid fa-sliders"></i>
+                </button>
+            </div>
 
-                    <button
-                        id="settings-btn"
-                        class="icon"
-                        title="Ayarlar"
-                    >
-                        ⚙
-                    </button>
+            <div class="control-row">
+                <button id="panel-mute" class="control" title="Mikrofon">
+                    <i class="fa-solid fa-microphone"></i>
+                </button>
 
-                    <button
-                        id="logout-btn"
-                        class="icon danger"
-                        title="Çıkış"
-                    >
-                        ⏻
-                    </button>
+                <button id="panel-deafen" class="control" title="Sesi kapat">
+                    <i class="fa-solid fa-headphones"></i>
+                </button>
 
-                </div>
-
+                <button id="panel-leave" class="control leave" title="Ses kanalından çık">
+                    <i class="fa-solid fa-phone-slash"></i>
+                </button>
             </div>
 
         </div>
 
     </aside>
 
+    <main class="main">
 
-    <!-- MAIN CHAT -->
+        <header class="header">
 
-    <main class="chat">
-
-        <header class="topbar">
-
-            <button
-                id="mobile-menu"
-                class="mobile-menu"
-            >
-                ☰
-            </button>
-
-            <div class="room-symbol">
-                #
-            </div>
-
-            <div class="top-title">
-
-                <h2 id="header-room">
-                    Genel
-                </h2>
-
-                <p id="header-topic">
-                    Topluluğun ana sohbet kanalı
-                </p>
-
-            </div>
-
-
-            <div class="top-actions">
-
-                <div class="search-box">
-
-                    <span>⌕</span>
-
-                    <input
-                        id="search-input"
-                        placeholder="Mesajlarda ara..."
-                    >
-
+            <div class="channel-info">
+                <div class="channel-icon">
+                    <i class="fa-solid fa-hashtag"></i>
                 </div>
 
+                <div>
+                    <h2 id="channel-name">Genel</h2>
+                    <p id="channel-topic">WAFFLE topluluğunda sohbet et</p>
+                </div>
+            </div>
 
-                <div
-                    id="connection"
-                    class="connection"
-                >
+            <div class="header-right">
 
-                    <i></i>
-
-                    <span>
-                        Bağlanıyor
-                    </span>
-
+                <div class="mic-status">
+                    <i class="fa-solid fa-microphone"></i>
+                    <div class="mic-meter">
+                        <div id="mic-meter-fill" class="mic-meter-fill"></div>
+                    </div>
                 </div>
 
-
-                <button
-                    id="top-settings"
-                    class="icon"
-                    title="Ayarlar"
-                >
-                    ⚙
-                </button>
+                <div id="connection" class="connection">
+                    <span class="connection-dot"></span>
+                    <span id="connection-text">Bağlanıyor</span>
+                </div>
 
             </div>
 
         </header>
 
+        <div id="media-area" class="media-area"></div>
 
-        <!-- VIDEO / SCREEN SHARE -->
+        <div id="messages" class="messages"></div>
 
-        <section
-            id="video-area"
-            class="video-area"
-        ></section>
-
-
-        <!-- MESSAGES -->
-
-        <section
-            id="messages"
-            class="messages"
-        ></section>
-
-
-        <div
-            id="typing"
-            class="typing"
-        ></div>
-
-
-        <!-- COMPOSER -->
+        <div id="typing" class="typing"></div>
 
         <div class="composer">
-
-            <div class="compose-wrap">
-
-                <button
-                    class="attach"
-                    title="Yakında"
-                >
-                    ＋
+            <form id="message-form" class="composer-form">
+                <input id="message-input" autocomplete="off" maxlength="2000" placeholder="Bir şeyler yaz...">
+                <button class="send" type="submit">
+                    <i class="fa-solid fa-paper-plane"></i>
                 </button>
-
-                <textarea
-                    id="message-input"
-                    class="message-input"
-                    rows="1"
-                    maxlength="2000"
-                    placeholder="# Genel kanalına mesaj yaz..."
-                ></textarea>
-
-                <button
-                    id="send-btn"
-                    class="send"
-                    title="Gönder"
-                >
-                    ➤
-                </button>
-
-            </div>
-
-            <div class="hint-row">
-                WAFFLE · Mesajlar sunucu belleğinde tutulur.
-            </div>
-
+            </form>
         </div>
 
+        <div id="voice-bar" class="voice-bar">
 
-        <!-- VOICE CONTROLS -->
+            <div class="voice-state">
+                <div class="voice-state-icon">
+                    <i class="fa-solid fa-volume-high"></i>
+                </div>
 
-        <div
-            id="callbar"
-            class="callbar"
-        >
+                <div>
+                    <strong id="voice-channel-label">Ses kanalına bağlı</strong>
+                    <small id="voice-connection-label">Bağlantı kuruluyor...</small>
+                </div>
+            </div>
 
-            <button
-                id="mute-btn"
-                class="callbtn"
-                title="Mikrofon"
-            >
-                🎙
-            </button>
+            <div class="voice-actions">
 
-            <button
-                id="deafen-btn"
-                class="callbtn"
-                title="Sesi kapat"
-            >
-                🎧
-            </button>
+                <button id="voice-mute" class="voice-action" title="Mikrofonu kapat">
+                    <i class="fa-solid fa-microphone"></i>
+                </button>
 
-            <button
-                id="share-btn"
-                class="callbtn"
-                title="Ekran paylaş"
-            >
-                ▣
-            </button>
+                <button id="voice-deafen" class="voice-action" title="Sesi kapat">
+                    <i class="fa-solid fa-headphones"></i>
+                </button>
 
-            <button
-                id="leave-btn"
-                class="callbtn end"
-                title="Sesten ayrıl"
-            >
-                ☎
-            </button>
+                <button id="screen-share" class="voice-action screen" title="Ekran paylaş">
+                    <i class="fa-solid fa-display"></i>
+                </button>
+
+                <button id="voice-leave" class="voice-action" title="Ses kanalından çık">
+                    <i class="fa-solid fa-phone-slash"></i>
+                </button>
+
+            </div>
 
         </div>
 
     </main>
 
+</div>
+</section>
 
-    <!-- MEMBERS -->
+<!-- =========================
+     CONTEXT MENU
+========================= -->
 
-    <aside class="members">
+<div id="context-menu" class="context">
+    <h4 id="context-user">Kullanıcı</h4>
 
-        <div class="members-head">
+    <label>
+        Kişinin ses seviyesi:
+        <span id="context-volume-value">100%</span>
+    </label>
 
-            <strong>
-                Çevrimiçi —
-                <span id="member-count">0</span>
-            </strong>
-
-        </div>
-
-        <div
-            id="member-list"
-            class="member-list"
-        ></div>
-
-    </aside>
-
+    <input id="context-volume" type="range" min="0" max="200" value="100">
 </div>
 
+<!-- =========================
+     SETTINGS MODAL
+========================= -->
 
-<!-- =======================================================
-     SETTINGS
-======================================================= -->
+<div id="settings-modal" class="modal-backdrop">
 
-<div
-    id="settings-modal"
-    class="modal"
->
+    <div class="modal">
 
-    <div class="modal-card">
-
-        <div class="modal-head">
-
+        <div class="modal-header">
             <h3>
-                WAFFLE ayarları
+                <i class="fa-solid fa-microphone-lines"></i>
+                Ses Ayarları
             </h3>
 
-            <button
-                id="settings-close"
-                class="modal-close"
-            >
-                ✕
+            <button id="settings-close" class="modal-close">
+                <i class="fa-solid fa-xmark"></i>
             </button>
-
         </div>
 
+        <div class="device-field">
+            <label>Mikrofon</label>
+            <select id="microphone-device"></select>
+        </div>
 
-        <div class="setting">
+        <div class="device-field">
+            <label>Ses çıkışı</label>
+            <select id="output-device"></select>
+        </div>
 
-            <div class="setting-row">
+        <div class="test-box">
 
-                <div>
+            <div class="test-row">
+                <span>Mikrofon testi</span>
+                <span id="mic-test-label">Hazır</span>
+            </div>
 
-                    <strong>
-                        Ses girişi iyileştirme
-                    </strong>
-
-                    <p>
-                        Tarayıcı echo cancellation,
-                        noise suppression ve auto gain kullanır.
-                    </p>
-
-                </div>
-
-                <button
-                    id="audio-toggle"
-                    class="switch on"
-                ></button>
-
+            <div class="test-meter">
+                <div id="test-meter-fill" class="test-fill"></div>
             </div>
 
         </div>
 
-
-        <div class="setting">
-
-            <div class="setting-row">
-
-                <div>
-
-                    <strong>
-                        Enter ile gönder
-                    </strong>
-
-                    <p>
-                        Kapalıysa Enter yeni satır ekler.
-                    </p>
-
-                </div>
-
-                <button
-                    id="enter-toggle"
-                    class="switch on"
-                ></button>
-
-            </div>
-
-        </div>
-
-
-        <div class="setting">
-
-            <strong style="margin-bottom:8px">
-                Ses seviyesi
-            </strong>
-
-            <input
-                id="master-volume"
-                class="range"
-                type="range"
-                min="0"
-                max="100"
-                value="100"
-            >
-
-        </div>
+        <button id="settings-save" class="modal-save">
+            Ayarları Uygula
+        </button>
 
     </div>
 
 </div>
 
-
-<div
-    id="toast"
-    class="toast"
-></div>
-
-<div
-    id="audio-container"
-    class="hidden"
-></div>
-
-
 <script src="/socket.io/socket.io.js"></script>
 
 <script>
-
-(() => {
-
-'use strict';
-
+"use strict";
 
 /* =========================================================
-   SOCKET
+   WAFFLE CLIENT
 ========================================================= */
 
 const socket = io({
-    autoConnect:true
+    transports: ["websocket", "polling"],
+    reconnection: true,
+    reconnectionAttempts: Infinity,
+    reconnectionDelay: 700,
+    reconnectionDelayMax: 5000,
+    timeout: 10000
 });
 
+/* =========================
+   ELEMENTS
+========================= */
+
+const loginScreen = document.getElementById("login-screen");
+const app = document.getElementById("app");
+
+const usernameInput = document.getElementById("username");
+const passwordInput = document.getElementById("password");
+const colorInput = document.getElementById("color");
+const roomInput = document.getElementById("room");
+const loginButton = document.getElementById("login-button");
+const loginError = document.getElementById("login-error");
+
+const memberList = document.getElementById("member-list");
+const messages = document.getElementById("messages");
+const typingBox = document.getElementById("typing");
+const messageInput = document.getElementById("message-input");
+const messageForm = document.getElementById("message-form");
+
+const channelName = document.getElementById("channel-name");
+const channelTopic = document.getElementById("channel-topic");
+
+const connection = document.getElementById("connection");
+const connectionText = document.getElementById("connection-text");
+
+const myAvatar = document.getElementById("my-avatar");
+const myName = document.getElementById("my-name");
+
+const voiceBar = document.getElementById("voice-bar");
+const voiceChannelLabel = document.getElementById("voice-channel-label");
+const voiceConnectionLabel = document.getElementById("voice-connection-label");
+
+const voiceMute = document.getElementById("voice-mute");
+const voiceDeafen = document.getElementById("voice-deafen");
+const voiceLeave = document.getElementById("voice-leave");
+const panelMute = document.getElementById("panel-mute");
+const panelDeafen = document.getElementById("panel-deafen");
+const panelLeave = document.getElementById("panel-leave");
+const screenShare = document.getElementById("screen-share");
+
+const mediaArea = document.getElementById("media-area");
+
+const micMeterFill = document.getElementById("mic-meter-fill");
+
+const contextMenu = document.getElementById("context-menu");
+const contextUser = document.getElementById("context-user");
+const contextVolume = document.getElementById("context-volume");
+const contextVolumeValue = document.getElementById("context-volume-value");
+
+const settingsModal = document.getElementById("settings-modal");
+const settingsButton = document.getElementById("settings-button");
+const settingsClose = document.getElementById("settings-close");
+const settingsSave = document.getElementById("settings-save");
+const microphoneDevice = document.getElementById("microphone-device");
+const outputDevice = document.getElementById("output-device");
+const testMeterFill = document.getElementById("test-meter-fill");
+const micTestLabel = document.getElementById("mic-test-label");
+
+/* =========================
+   STATE
+========================= */
+
+let currentUser = "";
+let currentColor = "#7657ff";
+let currentRoom = "Genel";
+
+let currentVoiceChannel = null;
+
+let localMicStream = null;
+let screenStream = null;
+
+let audioContext = null;
+let micAnalyser = null;
+let micAnalysisSource = null;
+let micMeterAnimation = null;
+
+let muted = false;
+let deafened = false;
+
+let typingTimer = null;
+let loginInProgress = false;
+
+let peers = new Map();
+let remoteStreams = new Map();
+let pendingIce = new Map();
+
+let selectedContextPeer = null;
+
+let reconnecting = false;
+
+const remoteVolumes = new Map();
+
+const rtcConfig = {
+    iceServers: [
+        { urls: "stun:stun.l.google.com:19302" },
+        { urls: "stun:stun1.l.google.com:19302" },
+        { urls: "stun:stun.cloudflare.com:3478" }
+    ],
+    bundlePolicy: "max-bundle",
+    rtcpMuxPolicy: "require"
+};
 
 /* =========================================================
    HELPERS
 ========================================================= */
 
-const $ = id =>
-    document.getElementById(id);
+function escapeHTML(value){
+    return String(value ?? "").replace(/[&<>"']/g, c => ({
+        "&":"&amp;",
+        "<":"&lt;",
+        ">":"&gt;",
+        '"':"&quot;",
+        "'":"&#039;"
+    }[c]));
+}
 
+function showLoginError(text){
+    loginError.textContent = text;
+    loginError.style.display = "block";
+}
 
-const colors = [
-    '#8b5cf6',
-    '#22c55e',
-    '#3b82f6',
-    '#ef4444',
-    '#f59e0b',
-    '#ec4899',
-    '#06b6d4',
-    '#a855f7'
-];
+function hideLoginError(){
+    loginError.style.display = "none";
+}
 
+function setConnection(text, online){
+    connectionText.textContent = text;
+    connection.classList.toggle("online", !!online);
+}
 
-let selectedColor = colors[0];
+function initial(name){
+    return String(name || "?").trim().charAt(0).toUpperCase();
+}
 
-let currentUser = '';
+function topicFor(room){
+    if(room === "Oyun") return "Oyun, ekip ve sohbet";
+    if(room === "Müzik") return "Müzik, keşif ve sohbet";
+    return "WAFFLE topluluğunda sohbet et";
+}
 
-let currentRoom = 'Genel';
-
-let currentVoice = '';
-
-let users = [];
-
-let roomMessages = {
-    Genel:[],
-    Oyun:[],
-    Müzik:[]
-};
-
-let unread = {
-    Genel:0,
-    Oyun:0,
-    Müzik:0
-};
-
-let typingUsers = new Map();
-
-
-/* =========================================================
-   WEBRTC STATE
-========================================================= */
-
-let localStream = null;
-
-let screenStream = null;
-
-let peers = {};
-
-let pendingCandidates = {};
-
-let screenSenders = {};
-
-let isMuted = false;
-
-let isDeafened = false;
-
-let enterToSend = true;
-
-let audioEnabled = true;
-
-
-const rtcConfig = {
-
-    iceServers:[
-        {
-            urls:'stun:stun.l.google.com:19302'
-        },
-        {
-            urls:'stun:stun1.l.google.com:19302'
-        }
-    ]
-
-};
-
-
-/* =========================================================
-   LOGIN COLORS
-========================================================= */
-
-$('color-row').innerHTML =
-    colors.map((c,i) => `
-
-        <button
-            class="color ${i === 0 ? 'active' : ''}"
-            data-color="${c}"
-            style="background:${c}"
-            aria-label="Renk"
-        ></button>
-
-    `).join('');
-
-
-document.querySelectorAll('.color')
-.forEach(button => {
-
-    button.onclick = () => {
-
-        document
-            .querySelectorAll('.color')
-            .forEach(x =>
-                x.classList.remove('active')
-            );
-
-        button.classList.add('active');
-
-        selectedColor =
-            button.dataset.color;
-
-    };
-
-});
-
+function scrollMessages(){
+    requestAnimationFrame(() => {
+        messages.scrollTop = messages.scrollHeight;
+    });
+}
 
 /* =========================================================
    LOGIN
 ========================================================= */
 
-function showLoginError(text){
+loginButton.addEventListener("click", login);
 
-    $('login-error').textContent =
-        text || '';
-
-}
-
-
-$('login-btn').onclick = login;
-
-
-['username','password']
-.forEach(id => {
-
-    $(id).addEventListener(
-        'keydown',
-        e => {
-
-            if(e.key === 'Enter')
-                login();
-
-        }
-    );
-
+usernameInput.addEventListener("keydown", e => {
+    if(e.key === "Enter") passwordInput.focus();
 });
 
+passwordInput.addEventListener("keydown", e => {
+    if(e.key === "Enter") login();
+});
 
-function login(){
+async function login(){
 
-    const username =
-        $('username')
-        .value
-        .trim();
+    if(loginInProgress) return;
 
-    const password =
-        $('password')
-        .value;
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value;
+    const room = roomInput.value;
 
-    if(username.length < 2){
-
-        showLoginError(
-            'Kullanıcı adı en az 2 karakter olmalı.'
-        );
-
+    if(username.length < 2 || username.length > 24){
+        showLoginError("Kullanıcı adı 2-24 karakter arasında olmalı.");
         return;
-
     }
 
-
-    showLoginError(
-        'Bağlanıyor...'
-    );
-
-    $('login-btn').disabled = true;
-
-
-    socket.emit(
-        'joinRoom',
-        {
-            username,
-            password,
-            color:selectedColor,
-            room:$('start-room').value
-        }
-    );
-
-}
-
-
-/* =========================================================
-   LOGIN SUCCESS
-========================================================= */
-
-socket.on(
-    'loginSuccess',
-    () => {
-
-        currentUser =
-            $('username')
-            .value
-            .trim();
-
-        currentRoom =
-            $('start-room')
-            .value;
-
-
-        $('login-screen')
-            .style
-            .display = 'none';
-
-
-        $('app')
-            .style
-            .display = 'grid';
-
-
-        $('my-name')
-            .textContent =
-            currentUser;
-
-
-        $('my-avatar')
-            .textContent =
-            initials(currentUser);
-
-
-        $('my-avatar')
-            .style
-            .background =
-            selectedColor;
-
-
-        setConnection(true);
-
-        renderRoom();
-
-        renderMessages();
-
-        showToast(
-            "WAFFLE'a hoş geldin 👋"
-        );
-
-    }
-);
-
-
-socket.on(
-    'loginError',
-    message => {
-
-        $('login-btn')
-            .disabled = false;
-
-        showLoginError(message);
-
-    }
-);
-
-
-/* =========================================================
-   CONNECTION
-========================================================= */
-
-socket.on(
-    'connect',
-    () => {
-
-        setConnection(true);
-
-        if(currentUser){
-
-            showToast(
-                'Bağlantı yeniden kuruldu'
-            );
-
-        }
-
-    }
-);
-
-
-socket.on(
-    'disconnect',
-    () => {
-
-        setConnection(false);
-
-    }
-);
-
-
-socket.on(
-    'connect_error',
-    () => {
-
-        setConnection(false);
-
-    }
-);
-
-
-function setConnection(ok){
-
-    $('connection').className =
-        'connection ' +
-        (ok ? 'online' : 'offline');
-
-
-    $('connection')
-        .querySelector('span')
-        .textContent =
-        ok
-        ? 'Bağlı'
-        : 'Bağlantı yok';
-
-
-    $('server-dot').className =
-        'server-dot ' +
-        (ok ? 'online' : 'offline');
-
-}
-
-
-/* =========================================================
-   HELPERS
-========================================================= */
-
-function initials(name){
-
-    return name
-        .split(/\s+/)
-        .map(x => x[0])
-        .join('')
-        .slice(0,2)
-        .toUpperCase()
-        || 'W';
-
-}
-
-
-function esc(value){
-
-    return String(value ?? '')
-        .replace(
-            /[&<>"']/g,
-            char => ({
-                '&':'&amp;',
-                '<':'&lt;',
-                '>':'&gt;',
-                '"':'&quot;',
-                "'":'&#039;'
-            }[char])
-        );
-
-}
-
-
-function colorOf(name){
-
-    const user =
-        users.find(
-            x => x.username === name
-        );
-
-    return user?.color ||
-        '#8b5cf6';
-
-}
-
-
-function showToast(text){
-
-    const toast =
-        $('toast');
-
-    toast.textContent =
-        text;
-
-    toast.classList.add('show');
-
-    clearTimeout(
-        showToast.timer
-    );
-
-    showToast.timer =
-        setTimeout(
-            () =>
-                toast.classList.remove('show'),
-            2600
-        );
-
-}
-
-
-function topic(room){
-
-    return {
-
-        Genel:
-            'Topluluğun ana sohbet kanalı',
-
-        Oyun:
-            'Oyun, ekip ve rekabet sohbetleri',
-
-        Müzik:
-            'Müzik, albümler ve keşifler'
-
-    }[room] || '';
-
-}
-
-
-/* =========================================================
-   TEXT ROOMS
-========================================================= */
-
-document
-    .querySelectorAll('.room')
-    .forEach(button => {
-
-        button.onclick = () =>
-            switchRoom(
-                button.dataset.room
-            );
-
-    });
-
-
-function switchRoom(room){
-
-    if(room === currentRoom)
+    if(!password){
+        showLoginError("Sunucu şifresini gir.");
         return;
+    }
 
+    loginInProgress = true;
+    loginButton.disabled = true;
+    hideLoginError();
 
-    $('sidebar')
-        .classList
-        .remove('open');
+    currentUser = username;
+    currentColor = colorInput.value;
+    currentRoom = room;
 
-
-    socket.emit(
-        'switchRoom',
+    socket.emit("joinRoom", {
+        username,
+        password,
+        color: currentColor,
         room
-    );
-
-
-    currentRoom =
-        room;
-
-
-    unread[room] = 0;
-
-
-    renderRoom();
-
-    renderMessages();
-
+    });
 }
 
+socket.on("loginSuccess", () => {
+
+    loginInProgress = false;
+    loginButton.disabled = false;
+
+    loginScreen.style.display = "none";
+    app.style.display = "block";
+
+    myName.textContent = currentUser;
+    myAvatar.textContent = initial(currentUser);
+    myAvatar.style.background = currentColor;
+
+    channelName.textContent = currentRoom;
+    channelTopic.textContent = topicFor(currentRoom);
+
+    messageInput.focus();
+
+    saveLocalSettings();
+});
+
+socket.on("loginError", msg => {
+    loginInProgress = false;
+    loginButton.disabled = false;
+    showLoginError(msg || "Giriş başarısız.");
+});
 
 /* =========================================================
-   ROOM UI
+   SOCKET CONNECTION
 ========================================================= */
 
-function renderRoom(){
+socket.on("connect", () => {
 
-    document
-        .querySelectorAll('.room')
-        .forEach(button => {
+    reconnecting = false;
 
-            const active =
-                button.dataset.room ===
-                currentRoom;
+    setConnection("Bağlı", true);
 
+    if(currentVoiceChannel){
+        voiceConnectionLabel.textContent = "Sunucu bağlantısı yeniden kuruldu";
+    }
+});
 
-            button.classList.toggle(
-                'active',
-                active
-            );
+socket.on("disconnect", () => {
 
+    reconnecting = true;
 
-            const badge =
-                button.querySelector(
-                    '.room-badge'
-                );
+    setConnection("Bağlantı kesildi", false);
 
+    if(currentVoiceChannel){
+        voiceConnectionLabel.textContent = "Bağlantı yeniden kuruluyor...";
+    }
+});
 
-            if(
-                unread[button.dataset.room] > 0
-                &&
-                !active
-            ){
+socket.on("connect_error", () => {
+    setConnection("Bağlanamıyor", false);
+});
 
-                badge.textContent =
-                    unread[button.dataset.room] > 99
-                    ? '99+'
-                    : unread[button.dataset.room];
+/* =========================================================
+   CHAT
+========================================================= */
 
+document.querySelectorAll(".text-room").forEach(button => {
 
-                badge.classList.remove(
-                    'hidden'
-                );
+    button.addEventListener("click", () => {
 
-            }else{
+        const room = button.dataset.room;
 
-                badge.classList.add(
-                    'hidden'
-                );
+        if(!room || room === currentRoom) return;
 
-            }
+        currentRoom = room;
 
+        document.querySelectorAll(".text-room").forEach(x => {
+            x.classList.toggle("active", x.dataset.room === room);
         });
 
+        channelName.textContent = room;
+        channelTopic.textContent = topicFor(room);
 
-    $('header-room')
-        .textContent =
-        currentRoom;
+        messages.innerHTML = "";
+        typingBox.textContent = "";
 
+        socket.emit("switchRoom", room);
+    });
+});
 
-    $('header-topic')
-        .textContent =
-        topic(currentRoom);
+messageForm.addEventListener("submit", e => {
 
+    e.preventDefault();
 
-    $('message-input')
-        .placeholder =
-        `# ${currentRoom} kanalına mesaj yaz...`;
+    const text = messageInput.value.trim();
 
-}
+    if(!text) return;
 
+    socket.emit("chatMessage", {
+        text,
+        room: currentRoom
+    });
 
-/* =========================================================
-   MESSAGE RENDERING
-========================================================= */
+    messageInput.value = "";
 
-function renderMessages(){
+    socket.emit("typing", false);
+});
 
-    const area =
-        $('messages');
+messageInput.addEventListener("input", () => {
 
+    socket.emit("typing", true);
 
-    const query =
-        $('search-input')
-        .value
-        .trim()
-        .toLowerCase();
+    clearTimeout(typingTimer);
 
+    typingTimer = setTimeout(() => {
+        socket.emit("typing", false);
+    }, 1000);
+});
 
-    let list =
-        roomMessages[currentRoom] ||
-        [];
+socket.on("chatHistory", history => {
 
+    messages.innerHTML = "";
 
-    if(query){
+    if(!Array.isArray(history)) return;
 
-        list =
-            list.filter(
-                message =>
-                    message.text &&
-                    message.text
-                        .toLowerCase()
-                        .includes(query)
-            );
+    history.forEach(renderMessage);
 
-    }
+    scrollMessages();
+});
 
+socket.on("message", data => {
+    renderMessage(data);
+    scrollMessages();
+});
 
-    area.innerHTML = `
+function renderMessage(data){
 
-        <div class="welcome">
+    const item = document.createElement("div");
 
-            <div class="welcome-mark">
-                #
-            </div>
+    const isMe = data.user === currentUser;
+    const isSystem = data.user === "Sistem";
 
-            <h3>
-                ${esc(currentRoom)}
-                kanalına hoş geldin.
-            </h3>
+    item.className =
+        "message" +
+        (isSystem ? " system" : "");
 
-            <p>
-                ${esc(topic(currentRoom))}
-                · Sohbeti başlatmak için
-                aşağıdan mesaj gönder.
-            </p>
+    const color = escapeHTML(data.color || "#8c98aa");
 
+    item.innerHTML = `
+        <div class="avatar" style="background:${color}">
+            ${escapeHTML(initial(data.user))}
         </div>
 
-        ${
-            list.length
-            ?
-            list.map(renderMessage).join('')
-            :
-            `
-                <div class="empty">
-                    Henüz mesaj yok.
-                    İlk mesajı sen yaz. ✨
-                </div>
-            `
-        }
+        <div class="message-content">
 
-    `;
-
-
-    area.scrollTop =
-        area.scrollHeight;
-
-}
-
-
-function renderMessage(message){
-
-    if(message.user === 'Sistem'){
-
-        return `
-
-            <div class="system">
-
-                <span>
-                    ${esc(message.text)}
-                    ·
-                    ${esc(message.time)}
+            <div class="message-meta">
+                <span class="message-user" style="color:${color}">
+                    ${escapeHTML(data.user)}
                 </span>
 
+                <span class="message-time">
+                    ${escapeHTML(data.time || "")}
+                </span>
             </div>
 
-        `;
-
-    }
-
-
-    const mine =
-        message.user ===
-        currentUser;
-
-
-    return `
-
-        <article class="message">
-
-            <div
-                class="avatar"
-                style="
-                    background:
-                    ${esc(
-                        message.color ||
-                        colorOf(message.user)
-                    )}
-                "
-            >
-                ${esc(
-                    initials(message.user)
-                )}
+            <div class="message-text">
+                ${escapeHTML(data.text)}
             </div>
 
-
-            <div class="msg-body">
-
-                <div class="msg-head">
-
-                    <span
-                        class="msg-name"
-                        style="
-                            color:
-                            ${esc(
-                                message.color ||
-                                colorOf(message.user)
-                            )}
-                        "
-                    >
-
-                        ${esc(message.user)}
-
-                        ${mine ? ' · sen' : ''}
-
-                    </span>
-
-
-                    <span class="msg-time">
-
-                        ${esc(
-                            message.time || ''
-                        )}
-
-                    </span>
-
-                </div>
-
-
-                <div class="msg-text">
-
-                    ${
-                        highlight(
-                            esc(message.text),
-                            $('search-input')
-                                .value
-                                .trim()
-                        )
-                    }
-
-                </div>
-
-            </div>
-
-        </article>
-
+        </div>
     `;
 
+    messages.appendChild(item);
 }
 
+socket.on("userTyping", data => {
 
-function highlight(text,query){
+    if(!data || data.id === socket.id) return;
 
-    if(!query)
-        return text;
-
-
-    const escaped =
-        query.replace(
-            /[.*+?^${}()|[\]\\]/g,
-            '\\$&'
-        );
-
-
-    return text.replace(
-        new RegExp(
-            '(' +
-            escaped +
-            ')',
-            'ig'
-        ),
-        '<span class="highlight">$1</span>'
-    );
-
-}
-
+    typingBox.textContent =
+        data.isTyping
+            ? `${data.username} yazıyor...`
+            : "";
+});
 
 /* =========================================================
-   MESSAGE EVENTS
+   MEMBERS
 ========================================================= */
 
-socket.on(
-    'message',
-    message => {
+socket.on("updateUserList", users => {
 
-        if(!message ||
-           !message.user)
-            return;
+    memberList.innerHTML = "";
 
+    if(!Array.isArray(users)) return;
 
-        const room =
-            currentRoom;
+    users.forEach(user => {
 
+        const item = document.createElement("div");
 
-        roomMessages[room] ??= [];
+        item.className = "member";
+        item.id = `member-${user.id}`;
 
-
-        roomMessages[room]
-            .push(message);
-
-
-        if(
-            roomMessages[room].length >
-            150
-        ){
-
-            roomMessages[room]
-                .shift();
-
-        }
-
-
-        if(
-            currentRoom === room
-        ){
-
-            renderMessages();
-
-        }else{
-
-            unread[room] =
-                (unread[room] || 0) + 1;
-
-            renderRoom();
-
-        }
-
-    }
-);
-
-
-socket.on(
-    'roomHistory',
-    data => {
-
-        if(
-            !data?.room ||
-            !Array.isArray(data.messages)
-        )
-            return;
-
-
-        roomMessages[data.room] =
-            data.messages;
-
-
-        if(
-            data.room === currentRoom
-        ){
-
-            renderMessages();
-
-        }
-
-    }
-);
-
-
-/* =========================================================
-   COMPOSER
-========================================================= */
-
-const input =
-    $('message-input');
-
-
-function sendMessage(){
-
-    const text =
-        input.value.trim();
-
-
-    if(!text)
-        return;
-
-
-    socket.emit(
-        'chatMessage',
-        {
-            room:currentRoom,
-            text
-        }
-    );
-
-
-    input.value = '';
-
-    resizeInput();
-
-    $('send-btn').disabled =
-        true;
-
-    socket.emit(
-        'typing',
-        false
-    );
-
-}
-
-
-$('send-btn').onclick =
-    sendMessage;
-
-
-input.addEventListener(
-    'input',
-    () => {
-
-        resizeInput();
-
-        $('send-btn')
-            .disabled =
-            !input.value.trim();
-
-
-        socket.emit(
-            'typing',
-            !!input.value.trim()
-        );
-
-    }
-);
-
-
-input.addEventListener(
-    'keydown',
-    event => {
-
-        if(
-            event.key === 'Enter' &&
-            !event.shiftKey &&
-            enterToSend
-        ){
-
-            event.preventDefault();
-
-            sendMessage();
-
-        }
-
-    }
-);
-
-
-function resizeInput(){
-
-    input.style.height =
-        'auto';
-
-    input.style.height =
-        Math.min(
-            input.scrollHeight,
-            130
-        ) + 'px';
-
-}
-
-
-$('send-btn')
-    .disabled = true;
-
-
-setInterval(
-    () =>
-        socket.emit(
-            'typing',
-            false
-        ),
-    5000
-);
-
-
-/* =========================================================
-   TYPING
-========================================================= */
-
-socket.on(
-    'userTyping',
-    data => {
-
-        if(!data?.id)
-            return;
-
-
-        if(data.isTyping){
-
-            typingUsers.set(
-                data.id,
-                data.username
-            );
-
-        }else{
-
-            typingUsers.delete(
-                data.id
-            );
-
-        }
-
-
-        renderTyping();
-
-    }
-);
-
-
-function renderTyping(){
-
-    const names =
-        [
-            ...typingUsers.values()
-        ]
-        .filter(
-            name =>
-                name !== currentUser
-        );
-
-
-    $('typing')
-        .textContent =
-        names.length
-        ?
-        (
-            names.length === 1
-            ?
-            `${names[0]} yazıyor...`
-            :
-            `${names.slice(0,2).join(', ')} yazıyor...`
-        )
-        :
-        '';
-
-}
-
-
-/* =========================================================
-   USERS
-========================================================= */
-
-socket.on(
-    'updateUserList',
-    list => {
-
-        users =
-            Array.isArray(list)
-            ? list
-            : [];
-
-
-        renderMembers();
-
-        renderVoiceUsers();
-
-
-        const me =
-            users.find(
-                x =>
-                    x.username ===
-                    currentUser
-            );
-
-
-        if(me){
-
-            $('my-avatar')
-                .style
-                .background =
-                me.color;
-
-        }
-
-    }
-);
-
-
-function renderMembers(){
-
-    const list =
-        $('member-list');
-
-
-    $('member-count')
-        .textContent =
-        users.length;
-
-
-    list.innerHTML =
-        users.length
-        ?
-        users.map(
-            user => `
-
-                <div
-                    class="member"
-                    data-id="${esc(user.id)}"
-                >
-
-                    <div
-                        class="avatar"
-                        style="
-                            background:
-                            ${esc(
-                                user.color ||
-                                '#8b5cf6'
-                            )}
-                        "
-                    >
-                        ${esc(
-                            initials(
-                                user.username
-                            )
-                        )}
-                    </div>
-
-
-                    <div class="member-info">
-
-                        <strong>
-
-                            ${esc(user.username)}
-
-                            ${
-                                user.username ===
-                                currentUser
-                                ?
-                                ' (sen)'
-                                :
-                                ''
-                            }
-
-                        </strong>
-
-
-                        <small>
-
-                            ${
-                                user.voiceChannel
-                                ?
-                                '🔊 ' +
-                                esc(
-                                    user.voiceChannel
-                                )
-                                :
-                                'Çevrimiçi'
-                            }
-
-                        </small>
-
-                    </div>
-
-                </div>
-
-            `
-        ).join('')
-        :
-        `
-            <div class="empty">
-                Kimse yok.
+        item.innerHTML = `
+            <div
+                class="member-avatar"
+                style="background:${escapeHTML(user.color || "#7657ff")}"
+            >
+                ${escapeHTML(initial(user.username))}
             </div>
+
+            <div class="member-name">
+                ${escapeHTML(user.username)}
+            </div>
+
+            <div class="member-status"></div>
         `;
 
+        item.addEventListener("contextmenu", e => {
 
-    list
-        .querySelectorAll('.member')
-        .forEach(element => {
+            e.preventDefault();
 
-            element.oncontextmenu =
-                event => {
+            if(user.id === socket.id) return;
 
-                    event.preventDefault();
+            selectedContextPeer = user.id;
 
-                    showToast(
-                        'Kullanıcı kontrolleri yakında'
-                    );
+            contextUser.textContent = user.username;
 
-                };
+            const currentVolume =
+                remoteVolumes.get(user.id) ?? 1;
 
+            contextVolume.value =
+                Math.round(currentVolume * 100);
+
+            contextVolumeValue.textContent =
+                `${Math.round(currentVolume * 100)}%`;
+
+            contextMenu.style.display = "block";
+
+            const width = 210;
+            const height = 125;
+
+            contextMenu.style.left =
+                `${Math.min(e.clientX, window.innerWidth - width - 10)}px`;
+
+            contextMenu.style.top =
+                `${Math.min(e.clientY, window.innerHeight - height - 10)}px`;
         });
 
-}
-
-
-/* =========================================================
-   VOICE
-========================================================= */
-
-document
-    .querySelectorAll('.voice-room')
-    .forEach(room => {
-
-        room.onclick =
-            () =>
-                joinVoice(
-                    room.dataset.voice
-                );
-
+        memberList.appendChild(item);
     });
+});
 
+document.addEventListener("click", e => {
 
-function joinVoice(channel){
-
-    if(
-        currentVoice ===
-        channel
-    ){
-
-        leaveVoice();
-
-        return;
-
+    if(!contextMenu.contains(e.target)){
+        contextMenu.style.display = "none";
     }
+});
 
+contextVolume.addEventListener("input", () => {
 
-    if(!localStream){
+    const value = Number(contextVolume.value) / 100;
 
-        requestMic()
-            .then(
-                () =>
-                    joinVoice(channel)
-            )
-            .catch(
-                () => {}
-            );
+    contextVolumeValue.textContent =
+        `${Math.round(value * 100)}%`;
 
-        return;
+    if(!selectedContextPeer) return;
 
-    }
+    remoteVolumes.set(selectedContextPeer, value);
 
-
-    if(currentVoice)
-        leaveVoice();
-
-
-    currentVoice =
-        channel;
-
-
-    socket.emit(
-        'joinVoiceChannel',
-        channel
+    const audio = document.getElementById(
+        `audio-${selectedContextPeer}`
     );
 
-
-    $('callbar')
-        .classList
-        .add('show');
-
-
-    document
-        .querySelectorAll(
-            '.voice-room-head'
-        )
-        .forEach(
-            element =>
-                element.classList.remove(
-                    'joined'
-                )
-        );
-
-
-    document
-        .querySelector(
-            `[data-voice="${channel}"]
-             .voice-room-head`
-        )
-        ?.classList
-        .add('joined');
-
-
-    showToast(
-        `${channel} kanalına bağlandın 🔊`
-    );
-
-}
-
-
-async function requestMic(){
-
-    if(localStream)
-        return localStream;
-
-
-    try{
-
-        localStream =
-            await navigator
-                .mediaDevices
-                .getUserMedia({
-
-                    audio:{
-                        echoCancellation:
-                            audioEnabled,
-
-                        noiseSuppression:
-                            audioEnabled,
-
-                        autoGainControl:
-                            audioEnabled,
-
-                        channelCount:1
-                    },
-
-                    video:false
-
-                });
-
-
-        startSpeaking();
-
-        return localStream;
-
-    }catch(error){
-
-        showToast(
-            'Mikrofon izni alınamadı. Tarayıcı izinlerini kontrol et.'
-        );
-
-        throw error;
-
+    if(audio){
+        audio.volume = deafened ? 0 : value;
     }
-
-}
-
+});
 
 /* =========================================================
    VOICE STATE
 ========================================================= */
 
-socket.on(
-    'voicePeers',
-    async ids => {
+socket.on("updateVoiceState", state => {
 
-        for(
-            const id of ids || []
-        ){
+    document.querySelectorAll(".voice-users")
+        .forEach(x => x.innerHTML = "");
 
-            if(peers[id])
-                continue;
+    if(!state) return;
 
+    Object.entries(state).forEach(([channel, users]) => {
 
-            const peer =
-                createPeer(id);
+        let container = null;
 
-
-            peers[id] =
-                peer;
-
-
-            addLocalTracks(peer);
-
-
-            await negotiate(id);
-
+        if(channel === "Sesli - Genel"){
+            container =
+                document.getElementById("voice-users-general");
         }
 
-    }
-);
+        if(channel === "Sesli - Oyun"){
+            container =
+                document.getElementById("voice-users-game");
+        }
 
+        if(!container || !Array.isArray(users)) return;
 
-socket.on(
-    'userJoinedVoice',
-    () => {}
-);
+        users.forEach(user => {
 
+            const div = document.createElement("div");
 
-socket.on(
-    'userLeftVoice',
-    id =>
-        removePeer(id)
-);
+            div.className = "voice-user";
+            div.id = `voice-user-${user.id}`;
 
+            div.textContent = user.username;
 
-socket.on(
-    'updateVoiceState',
-    state => {
-
-        const map = {
-
-            'Sesli - Genel':
-                'voice-users-general',
-
-            'Sesli - Oyun':
-                'voice-users-game'
-
-        };
-
-
-        Object.keys(map)
-        .forEach(channel => {
-
-            $(map[channel])
-                .innerHTML =
-                (state?.[channel] || [])
-                .map(
-                    user => `
-
-                        <div class="voice-user">
-
-                            ${esc(
-                                user.username
-                            )}
-
-                            ${
-                                user.username ===
-                                currentUser
-                                ?
-                                ' (sen)'
-                                :
-                                ''
-                            }
-
-                        </div>
-
-                    `
-                )
-                .join('');
-
+            container.appendChild(div);
         });
+    });
+});
 
+socket.on("userSpeaking", data => {
 
-        renderMembers();
+    const member =
+        document.getElementById(`member-${data.id}`);
 
+    if(member){
+        member.classList.toggle(
+            "speaking",
+            !!data.isSpeaking
+        );
     }
-);
 
+    const voiceUser =
+        document.getElementById(`voice-user-${data.id}`);
 
-socket.on(
-    'userSpeaking',
-    data => {
-
-        document
-            .querySelectorAll('.member')
-            .forEach(element => {
-
-                element.classList.toggle(
-                    'speaking',
-
-                    element.dataset.id ===
-                    data?.id &&
-                    data.isSpeaking
-                );
-
-            });
-
+    if(voiceUser){
+        voiceUser.classList.toggle(
+            "speaking",
+            !!data.isSpeaking
+        );
     }
-);
-
+});
 
 /* =========================================================
-   LEAVE VOICE
+   MICROPHONE
 ========================================================= */
 
-function leaveVoice(){
+async function ensureAudioContext(){
 
-    if(currentVoice){
+    if(!audioContext){
 
-        socket.emit(
-            'leaveVoiceChannel',
-            currentVoice
-        );
-
-    }
-
-
-    Object.keys(peers)
-        .forEach(removePeer);
-
-
-    if(screenStream)
-        stopScreenShare();
-
-
-    if(localStream){
-
-        localStream
-            .getTracks()
-            .forEach(
-                track =>
-                    track.stop()
-            );
-
-        localStream = null;
+        audioContext =
+            new (window.AudioContext ||
+                 window.webkitAudioContext)();
 
     }
 
-
-    currentVoice = '';
-
-    $('callbar')
-        .classList
-        .remove('show');
-
-
-    document
-        .querySelectorAll(
-            '.voice-room-head'
-        )
-        .forEach(
-            element =>
-                element.classList.remove(
-                    'joined'
-                )
-        );
-
-
-    showToast(
-        'Ses kanalından ayrıldın'
-    );
-
+    if(audioContext.state === "suspended"){
+        await audioContext.resume();
+    }
 }
 
+async function requestMicrophone(deviceId = null){
 
-$('leave-btn').onclick =
-    leaveVoice;
+    if(localMicStream){
+        return localMicStream;
+    }
 
+    if(!navigator.mediaDevices ||
+       !navigator.mediaDevices.getUserMedia){
 
-/* =========================================================
-   MUTE
-========================================================= */
-
-$('mute-btn').onclick =
-    () => {
-
-        if(!localStream)
-            return;
-
-
-        isMuted =
-            !isMuted;
-
-
-        localStream
-            .getAudioTracks()
-            .forEach(
-                track =>
-                    track.enabled =
-                    !isMuted
-            );
-
-
-        $('mute-btn')
-            .classList
-            .toggle(
-                'active',
-                isMuted
-            );
-
-
-        $('mute-btn')
-            .textContent =
-            isMuted
-            ? '🔇'
-            : '🎙';
-
-
-        socket.emit(
-            'speakingStatus',
-            false
+        throw new Error(
+            "Tarayıcı mikrofon erişimini desteklemiyor."
         );
+    }
 
+    await ensureAudioContext();
+
+    const audioConstraints = {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+        channelCount: 1,
+        sampleRate: 48000,
+        sampleSize: 16
     };
 
+    if(deviceId){
+        audioConstraints.deviceId = {
+            exact: deviceId
+        };
+    }
+
+    localMicStream =
+        await navigator.mediaDevices.getUserMedia({
+            audio: audioConstraints,
+            video: false
+        });
+
+    const track = localMicStream.getAudioTracks()[0];
+
+    if(track){
+
+        try{
+            await track.applyConstraints({
+                echoCancellation: true,
+                noiseSuppression: true,
+                autoGainControl: true,
+                channelCount: 1
+            });
+        }catch(_){}
+    }
+
+    startMicrophoneMeter(localMicStream);
+
+    return localMicStream;
+}
+
+/*
+ * ÖNEMLİ:
+ *
+ * Burada mikrofon WebAudio MediaStreamDestination'a
+ * aktarılmıyor.
+ *
+ * Böylece tarayıcının AEC / NS / AGC zinciri
+ * doğrudan WebRTC'ye gidiyor.
+ */
+
+function startMicrophoneMeter(stream){
+
+    stopMicrophoneMeter();
+
+    try{
+
+        if(!audioContext) return;
+
+        micAnalysisSource =
+            audioContext.createMediaStreamSource(stream);
+
+        micAnalyser =
+            audioContext.createAnalyser();
+
+        micAnalyser.fftSize = 512;
+        micAnalyser.smoothingTimeConstant = .15;
+
+        micAnalysisSource.connect(micAnalyser);
+
+        const data =
+            new Uint8Array(micAnalyser.fftSize);
+
+        const update = () => {
+
+            if(!micAnalyser){
+                return;
+            }
+
+            micAnalyser.getByteTimeDomainData(data);
+
+            let sum = 0;
+
+            for(let i=0;i<data.length;i++){
+
+                const n =
+                    (data[i] - 128) / 128;
+
+                sum += n * n;
+            }
+
+            const rms =
+                Math.sqrt(sum / data.length);
+
+            const level =
+                Math.min(100, Math.max(0, rms * 330));
+
+            micMeterFill.style.width =
+                `${level}%`;
+
+            testMeterFill.style.width =
+                `${level}%`;
+
+            if(level > 3){
+                micTestLabel.textContent =
+                    "Mikrofon algılanıyor";
+            }else{
+                micTestLabel.textContent =
+                    "Ses bekleniyor";
+            }
+
+            micMeterAnimation =
+                requestAnimationFrame(update);
+        };
+
+        update();
+
+    }catch(error){
+
+        console.warn(
+            "Mikrofon ölçümü başlatılamadı:",
+            error
+        );
+    }
+}
+
+function stopMicrophoneMeter(){
+
+    if(micMeterAnimation){
+        cancelAnimationFrame(micMeterAnimation);
+        micMeterAnimation = null;
+    }
+
+    if(micAnalysisSource){
+        try{
+            micAnalysisSource.disconnect();
+        }catch(_){}
+    }
+
+    if(micAnalyser){
+        try{
+            micAnalyser.disconnect();
+        }catch(_){}
+    }
+
+    micAnalysisSource = null;
+    micAnalyser = null;
+
+    micMeterFill.style.width = "0%";
+    testMeterFill.style.width = "0%";
+}
+
+function setLocalMute(value){
+
+    muted = !!value;
+
+    if(localMicStream){
+
+        localMicStream
+            .getAudioTracks()
+            .forEach(track => {
+                track.enabled = !muted;
+            });
+    }
+
+    updateMuteUI();
+
+    socket.emit(
+        "speakingStatus",
+        false
+    );
+}
+
+function updateMuteUI(){
+
+    voiceMute.classList.toggle(
+        "active",
+        muted
+    );
+
+    panelMute.classList.toggle(
+        "active",
+        muted
+    );
+
+    voiceMute.innerHTML = muted
+        ? '<i class="fa-solid fa-microphone-slash"></i>'
+        : '<i class="fa-solid fa-microphone"></i>';
+
+    panelMute.innerHTML = muted
+        ? '<i class="fa-solid fa-microphone-slash"></i>'
+        : '<i class="fa-solid fa-microphone"></i>';
+}
+
+function setDeafened(value){
+
+    deafened = !!value;
+
+    document
+        .querySelectorAll("audio[data-remote='true']")
+        .forEach(audio => {
+
+            const peerId = audio.dataset.peerId;
+
+            const volume =
+                remoteVolumes.get(peerId) ?? 1;
+
+            audio.volume =
+                deafened ? 0 : volume;
+        });
+
+    voiceDeafen.classList.toggle(
+        "active",
+        deafened
+    );
+
+    panelDeafen.classList.toggle(
+        "active",
+        deafened
+    );
+
+    voiceDeafen.innerHTML = deafened
+        ? '<i class="fa-solid fa-volume-xmark"></i>'
+        : '<i class="fa-solid fa-headphones"></i>';
+
+    panelDeafen.innerHTML = deafened
+        ? '<i class="fa-solid fa-volume-xmark"></i>'
+        : '<i class="fa-solid fa-headphones"></i>';
+}
 
 /* =========================================================
-   DEAFEN
+   VOICE JOIN / LEAVE
 ========================================================= */
 
-$('deafen-btn').onclick =
-    () => {
+document.querySelectorAll(".voice-room-button")
+.forEach(button => {
 
-        isDeafened =
-            !isDeafened;
+    button.addEventListener("click", async () => {
 
+        const parent =
+            button.closest(".voice-room");
 
-        $('deafen-btn')
-            .classList
-            .toggle(
-                'active',
-                isDeafened
-            );
+        if(!parent) return;
 
+        const channel =
+            parent.dataset.voice;
+
+        await joinVoiceChannel(channel);
+    });
+});
+
+async function joinVoiceChannel(channel){
+
+    if(currentVoiceChannel === channel){
+        return;
+    }
+
+    try{
+
+        if(currentVoiceChannel){
+            await leaveVoiceChannel(false);
+        }
+
+        voiceConnectionLabel.textContent =
+            "Mikrofon hazırlanıyor...";
+
+        await requestMicrophone();
+
+        currentVoiceChannel = channel;
+
+        voiceBar.classList.add("active");
+
+        voiceChannelLabel.textContent =
+            channel.replace("Sesli - ","");
+
+        voiceConnectionLabel.textContent =
+            "Bağlanıyor...";
 
         document
-            .querySelectorAll(
-                '#audio-container audio, .video-card video'
-            )
-            .forEach(
-                video => {
+            .querySelectorAll(".voice-room")
+            .forEach(x => {
+                x.classList.remove("active");
+            });
 
-                    if(
-                        video.dataset.self !==
-                        '1'
-                    ){
-
-                        video.muted =
-                            isDeafened;
-
-                    }
-
-                }
+        const roomElement =
+            document.querySelector(
+                `.voice-room[data-voice="${CSS.escape(channel)}"]`
             );
 
-    };
+        if(roomElement){
+            roomElement.classList.add("active");
+        }
 
+        startVoiceTimer(channel);
+
+        socket.emit(
+            "joinVoiceChannel",
+            channel
+        );
+
+    }catch(error){
+
+        console.error(error);
+
+        const message =
+            error?.name === "NotAllowedError"
+                ? "Mikrofon izni reddedildi. Tarayıcı adres çubuğundaki mikrofon iznini aç."
+                : error?.name === "NotFoundError"
+                    ? "Kullanılabilir mikrofon bulunamadı."
+                    : error?.message ||
+                      "Mikrofon başlatılamadı.";
+
+        alert(message);
+
+        voiceBar.classList.remove("active");
+        currentVoiceChannel = null;
+    }
+}
+
+async function leaveVoiceChannel(stopMedia = true){
+
+    if(currentVoiceChannel){
+
+        socket.emit(
+            "leaveVoiceChannel",
+            currentVoiceChannel
+        );
+    }
+
+    currentVoiceChannel = null;
+
+    voiceBar.classList.remove("active");
+
+    voiceConnectionLabel.textContent =
+        "Bağlı değil";
+
+    document
+        .querySelectorAll(".voice-room")
+        .forEach(x => x.classList.remove("active"));
+
+    stopVoiceTimer();
+
+    if(screenStream){
+        await stopScreenShare(false);
+    }
+
+    peers.forEach(peer => {
+        try{
+            peer.close();
+        }catch(_){}
+    });
+
+    peers.clear();
+    pendingIce.clear();
+    remoteStreams.clear();
+
+    document
+        .querySelectorAll("audio[data-remote='true']")
+        .forEach(x => x.remove());
+
+    mediaArea.innerHTML = "";
+    mediaArea.classList.remove("visible");
+
+    if(stopMedia){
+
+        stopMicrophoneMeter();
+
+        if(localMicStream){
+
+            localMicStream
+                .getTracks()
+                .forEach(track => track.stop());
+        }
+
+        localMicStream = null;
+
+        muted = false;
+        deafened = false;
+
+        updateMuteUI();
+        setDeafened(false);
+    }
+}
+
+voiceLeave.addEventListener(
+    "click",
+    () => leaveVoiceChannel(true)
+);
+
+panelLeave.addEventListener(
+    "click",
+    () => leaveVoiceChannel(true)
+);
+
+voiceMute.addEventListener(
+    "click",
+    () => setLocalMute(!muted)
+);
+
+panelMute.addEventListener(
+    "click",
+    () => setLocalMute(!muted)
+);
+
+voiceDeafen.addEventListener(
+    "click",
+    () => setDeafened(!deafened)
+);
+
+panelDeafen.addEventListener(
+    "click",
+    () => setDeafened(!deafened)
+);
+
+/* =========================================================
+   VOICE TIMER
+========================================================= */
+
+let voiceTimer = null;
+let voiceSeconds = 0;
+
+function startVoiceTimer(channel){
+
+    stopVoiceTimer();
+
+    voiceSeconds = 0;
+
+    const id =
+        channel === "Sesli - Genel"
+            ? "timer-general"
+            : "timer-game";
+
+    const element =
+        document.getElementById(id);
+
+    if(element){
+        element.style.display = "inline";
+        element.textContent = "00:00";
+    }
+
+    voiceTimer =
+        setInterval(() => {
+
+            voiceSeconds++;
+
+            const mins =
+                Math.floor(voiceSeconds / 60)
+                    .toString()
+                    .padStart(2,"0");
+
+            const secs =
+                (voiceSeconds % 60)
+                    .toString()
+                    .padStart(2,"0");
+
+            if(element){
+                element.textContent =
+                    `${mins}:${secs}`;
+            }
+
+        },1000);
+}
+
+function stopVoiceTimer(){
+
+    if(voiceTimer){
+        clearInterval(voiceTimer);
+        voiceTimer = null;
+    }
+
+    document
+        .querySelectorAll(".voice-timer")
+        .forEach(x => {
+            x.style.display = "none";
+            x.textContent = "00:00";
+        });
+}
 
 /* =========================================================
    WEBRTC
 ========================================================= */
 
-function addLocalTracks(peer){
+function createPeer(peerId){
 
-    if(localStream){
-
-        localStream
-            .getTracks()
-            .forEach(
-                track => {
-
-                    try{
-
-                        peer.addTrack(
-                            track,
-                            localStream
-                        );
-
-                    }catch(error){}
-
-                }
-            );
-
+    if(peers.has(peerId)){
+        return peers.get(peerId);
     }
 
+    const peer =
+        new RTCPeerConnection(rtcConfig);
 
-    if(screenStream){
+    peers.set(peerId, peer);
 
-        screenStream
-            .getTracks()
-            .forEach(
-                track => {
+    peer.__makingOffer = false;
+    peer.__ignoreOffer = false;
+    peer.__polite =
+        String(socket.id) > String(peerId);
 
-                    try{
+    peer.__audioSender = null;
+    peer.__videoSender = null;
 
-                        peer.addTrack(
-                            track,
-                            screenStream
-                        );
+    /* AUDIO */
 
-                    }catch(error){}
+    if(localMicStream){
 
-                }
-            );
+        const track =
+            localMicStream.getAudioTracks()[0];
 
+        if(track){
+
+            peer.__audioSender =
+                peer.addTrack(
+                    track,
+                    localMicStream
+                );
+        }
     }
 
-}
-
-
-function createPeer(id){
-
-    const peer =
-        new RTCPeerConnection(
-            rtcConfig
-        );
-
-
-    peer.onicecandidate =
-        event => {
-
-            if(event.candidate){
-
-                socket.emit(
-                    'signal',
-                    {
-                        to:id,
-
-                        signal:{
-                            candidate:
-                                event.candidate
-                        }
-                    }
-                );
-
-            }
-
-        };
-
-
-    peer.onconnectionstatechange =
-        () => {
-
-            if(
-                ['failed','closed']
-                .includes(
-                    peer.connectionState
-                )
-            ){
-
-                removePeer(id);
-
-            }
-
-        };
-
-
-    peer.ontrack =
-        event => {
-
-            if(
-                event.track.kind ===
-                'audio'
-            ){
-
-                let audio =
-                    $(`audio-${id}`);
-
-
-                if(!audio){
-
-                    audio =
-                        document
-                        .createElement(
-                            'audio'
-                        );
-
-
-                    audio.id =
-                        `audio-${id}`;
-
-
-                    audio.autoplay =
-                        true;
-
-
-                    audio.playsInline =
-                        true;
-
-
-                    audio.dataset.peerId =
-                        id;
-
-
-                    $('audio-container')
-                        .appendChild(
-                            audio
-                        );
-
-                }
-
-
-                audio.srcObject =
-                    event.streams[0];
-
-
-                audio.volume =
-                    Number(
-                        $('master-volume')
-                        .value
-                    ) / 100;
-
-
-                audio.muted =
-                    isDeafened;
-
-
-                audio
-                    .play()
-                    .catch(
-                        () => {}
-                    );
-
-            }
-
-            else if(
-                event.track.kind ===
-                'video'
-            ){
-
-                addVideo(
-                    id,
-                    event.streams[0],
-                    users.find(
-                        user =>
-                            user.id === id
-                    )?.username ||
-                    'Ekran paylaşımı'
-                );
-
-            }
-
-        };
-
-
-    return peer;
-
-}
-
-
-async function negotiate(id){
-
-    const peer =
-        peers[id];
-
-
-    if(
-        !peer ||
-        peer.signalingState !==
-        'stable'
-    )
-        return;
-
+    /*
+     * Video transceiver baştan oluşturuluyor.
+     * Böylece ekran paylaşımı başladığında
+     * yeniden m-line ekleme karmaşası yaşanmıyor.
+     */
 
     try{
 
-        const offer =
-            await peer.createOffer();
+        const transceiver =
+            peer.addTransceiver(
+                "video",
+                {
+                    direction:"sendrecv"
+                }
+            );
 
-
-        await peer.setLocalDescription(
-            offer
-        );
-
-
-        socket.emit(
-            'signal',
-            {
-                to:id,
-                signal:
-                    peer.localDescription
-            }
-        );
+        peer.__videoSender =
+            transceiver.sender;
 
     }catch(error){
 
         console.warn(
-            'WebRTC offer:',
+            "Video transceiver oluşturulamadı:",
             error
         );
-
     }
 
-}
+    peer.onicecandidate = event => {
 
+        if(!event.candidate) return;
 
-socket.on(
-    'signal',
-    async data => {
+        socket.emit("signal",{
+            to:peerId,
+            signal:{
+                candidate:event.candidate
+            }
+        });
+    };
+
+    peer.ontrack = event => {
+
+        if(event.track.kind === "audio"){
+
+            const stream =
+                event.streams[0];
+
+            if(stream){
+                remoteStreams.set(peerId,stream);
+            }
+
+            attachRemoteAudio(
+                peerId,
+                stream
+            );
+        }
+
+        if(event.track.kind === "video"){
+
+            const stream =
+                event.streams[0];
+
+            if(stream){
+                attachRemoteVideo(
+                    peerId,
+                    stream
+                );
+            }
+        }
+    };
+
+    peer.onconnectionstatechange = () => {
+
+        const state =
+            peer.connectionState;
+
+        if(state === "connected"){
+
+            if(currentVoiceChannel){
+                voiceConnectionLabel.textContent =
+                    "Ses bağlantısı aktif";
+            }
+        }
+
+        if(state === "connecting"){
+
+            if(currentVoiceChannel){
+                voiceConnectionLabel.textContent =
+                    "Ses bağlantısı kuruluyor...";
+            }
+        }
+
+        if(state === "failed"){
+
+            /*
+             * Önce ICE restart deniyoruz.
+             * Böylece geçici NAT değişikliklerinde
+             * kullanıcıyı kanaldan atmayız.
+             */
+
+            restartPeer(peerId);
+        }
+
+        if(state === "closed"){
+            removePeer(peerId);
+        }
+    };
+
+    peer.oniceconnectionstatechange = () => {
+
+        if(peer.iceConnectionState === "failed"){
+            restartPeer(peerId);
+        }
+    };
+
+    peer.onnegotiationneeded = async () => {
 
         try{
 
-            let peer =
-                peers[data.from];
+            peer.__makingOffer = true;
 
+            await peer.setLocalDescription(
+                await peer.createOffer()
+            );
 
-            if(!peer){
-
-                peer =
-                    createPeer(
-                        data.from
-                    );
-
-                peers[data.from] =
-                    peer;
-
-                addLocalTracks(
-                    peer
-                );
-
-            }
-
-
-            const signal =
-                data.signal;
-
-
-            if(signal.type === 'offer'){
-
-                await peer
-                    .setRemoteDescription(
-                        new RTCSessionDescription(
-                            signal
-                        )
-                    );
-
-
-                for(
-                    const candidate of
-                    pendingCandidates[data.from] ||
-                    []
-                ){
-
-                    await peer
-                        .addIceCandidate(
-                            candidate
-                        )
-                        .catch(
-                            () => {}
-                        );
-
-                }
-
-
-                pendingCandidates[data.from] =
-                    [];
-
-
-                const answer =
-                    await peer.createAnswer();
-
-
-                await peer.setLocalDescription(
-                    answer
-                );
-
-
-                socket.emit(
-                    'signal',
-                    {
-                        to:data.from,
-
-                        signal:
-                            peer.localDescription
-                    }
-                );
-
-            }
-
-            else if(
-                signal.type ===
-                'answer'
-            ){
-
-                await peer
-                    .setRemoteDescription(
-                        new RTCSessionDescription(
-                            signal
-                        )
-                    );
-
-
-                for(
-                    const candidate of
-                    pendingCandidates[data.from] ||
-                    []
-                ){
-
-                    await peer
-                        .addIceCandidate(
-                            candidate
-                        )
-                        .catch(
-                            () => {}
-                        );
-
-                }
-
-
-                pendingCandidates[data.from] =
-                    [];
-
-            }
-
-            else if(signal.candidate){
-
-                const candidate =
-                    new RTCIceCandidate(
-                        signal.candidate
-                    );
-
-
-                if(peer.remoteDescription){
-
-                    await peer
-                        .addIceCandidate(
-                            candidate
-                        )
-                        .catch(
-                            () => {}
-                        );
-
-                }else{
-
-                    (
-                        pendingCandidates[data.from] ??= []
-                    ).push(candidate);
-
-                }
-
-            }
+            socket.emit("signal",{
+                to:peerId,
+                signal:peer.localDescription
+            });
 
         }catch(error){
 
             console.warn(
-                'WebRTC sinyal:',
+                "Negotiation hatası:",
                 error
             );
 
+        }finally{
+
+            peer.__makingOffer = false;
         }
+    };
 
+    return peer;
+}
+
+async function restartPeer(peerId){
+
+    const peer = peers.get(peerId);
+
+    if(!peer) return;
+
+    if(
+        peer.connectionState === "closed" ||
+        peer.signalingState !== "stable"
+    ){
+        return;
     }
-);
-
-
-function removePeer(id){
 
     try{
 
-        peers[id]?.close();
+        await peer.restartIce();
 
-    }catch(error){}
+    }catch(error){
 
-
-    delete peers[id];
-
-    delete pendingCandidates[id];
-
-    delete screenSenders[id];
-
-
-    $(`audio-${id}`)?.remove();
-
-    $(`video-${id}`)?.remove();
-
+        console.warn(
+            "ICE restart başarısız:",
+            error
+        );
+    }
 }
 
+/* =========================================================
+   VOICE SIGNALING
+========================================================= */
+
+socket.on("voicePeers", async ids => {
+
+    if(!currentVoiceChannel) return;
+
+    for(const peerId of ids){
+
+        if(peerId === socket.id) continue;
+
+        if(peers.has(peerId)) continue;
+
+        const peer =
+            createPeer(peerId);
+
+        /*
+         * Yeni katılan taraf offer başlatıyor.
+         * Sunucu yalnızca aynı kanaldaki kullanıcıları
+         * birbirine tanıtıyor.
+         */
+
+        try{
+
+            await peer.setLocalDescription(
+                await peer.createOffer()
+            );
+
+            socket.emit("signal",{
+                to:peerId,
+                signal:peer.localDescription
+            });
+
+        }catch(error){
+
+            console.warn(
+                "İlk offer oluşturulamadı:",
+                error
+            );
+        }
+    }
+});
+
+socket.on("userJoinedVoice", peerId => {
+
+    /*
+     * Yeni kullanıcı kendi offer'ını gönderiyor.
+     * Burada ikinci offer üretmiyoruz.
+     * Böylece offer glare ihtimalini düşürüyoruz.
+     */
+});
+
+socket.on("signal", async data => {
+
+    if(!data || !data.from || !data.signal){
+        return;
+    }
+
+    const peerId = data.from;
+
+    let peer = peers.get(peerId);
+
+    if(!peer){
+        peer = createPeer(peerId);
+    }
+
+    const signal = data.signal;
+
+    try{
+
+        if(signal.candidate){
+
+            const candidate =
+                new RTCIceCandidate(
+                    signal.candidate
+                );
+
+            if(
+                peer.remoteDescription &&
+                peer.remoteDescription.type
+            ){
+
+                await peer.addIceCandidate(
+                    candidate
+                );
+
+            }else{
+
+                if(!pendingIce.has(peerId)){
+                    pendingIce.set(peerId,[]);
+                }
+
+                pendingIce
+                    .get(peerId)
+                    .push(candidate);
+            }
+
+            return;
+        }
+
+        if(signal.type === "offer"){
+
+            const offerCollision =
+                peer.__makingOffer ||
+                peer.signalingState !== "stable";
+
+            peer.__ignoreOffer =
+                !peer.__polite &&
+                offerCollision;
+
+            if(peer.__ignoreOffer){
+                return;
+            }
+
+            if(
+                peer.signalingState !== "stable"
+            ){
+
+                await peer.setLocalDescription({
+                    type:"rollback"
+                });
+            }
+
+            await peer.setRemoteDescription(
+                new RTCSessionDescription(signal)
+            );
+
+            await flushPendingIce(peerId,peer);
+
+            await peer.setLocalDescription(
+                await peer.createAnswer()
+            );
+
+            socket.emit("signal",{
+                to:peerId,
+                signal:peer.localDescription
+            });
+
+            return;
+        }
+
+        if(signal.type === "answer"){
+
+            await peer.setRemoteDescription(
+                new RTCSessionDescription(signal)
+            );
+
+            await flushPendingIce(peerId,peer);
+
+            return;
+        }
+
+    }catch(error){
+
+        console.warn(
+            "WebRTC sinyal işleme hatası:",
+            error
+        );
+    }
+});
+
+async function flushPendingIce(peerId,peer){
+
+    const list =
+        pendingIce.get(peerId);
+
+    if(!list || !list.length) return;
+
+    pendingIce.delete(peerId);
+
+    for(const candidate of list){
+
+        try{
+            await peer.addIceCandidate(candidate);
+        }catch(error){
+            console.warn(
+                "ICE candidate eklenemedi:",
+                error
+            );
+        }
+    }
+}
+
+socket.on("userLeftVoice", peerId => {
+    removePeer(peerId);
+});
+
+function removePeer(peerId){
+
+    const peer = peers.get(peerId);
+
+    if(peer){
+
+        try{
+            peer.close();
+        }catch(_){}
+
+        peers.delete(peerId);
+    }
+
+    pendingIce.delete(peerId);
+    remoteStreams.delete(peerId);
+    remoteVolumes.delete(peerId);
+
+    const audio =
+        document.getElementById(
+            `audio-${peerId}`
+        );
+
+    if(audio){
+        audio.remove();
+    }
+
+    const media =
+        document.getElementById(
+            `media-${peerId}`
+        );
+
+    if(media){
+        media.remove();
+    }
+
+    updateMediaArea();
+}
+
+/* =========================================================
+   REMOTE AUDIO
+========================================================= */
+
+function attachRemoteAudio(peerId,stream){
+
+    if(!stream) return;
+
+    let audio =
+        document.getElementById(
+            `audio-${peerId}`
+        );
+
+    if(!audio){
+
+        audio =
+            document.createElement("audio");
+
+        audio.id =
+            `audio-${peerId}`;
+
+        audio.dataset.peerId =
+            peerId;
+
+        audio.dataset.remote =
+            "true";
+
+        audio.autoplay = true;
+        audio.playsInline = true;
+
+        const volume =
+            remoteVolumes.get(peerId) ?? 1;
+
+        audio.volume =
+            deafened ? 0 : volume;
+
+        document.body.appendChild(audio);
+    }
+
+    if(audio.srcObject !== stream){
+        audio.srcObject = stream;
+    }
+
+    audio.play().catch(() => {
+
+        /*
+         * Bazı tarayıcılar autoplay politikasına
+         * takılırsa ilk kullanıcı etkileşiminde tekrar
+         * oynatmayı deniyoruz.
+         */
+
+        const retry = () => {
+            audio.play().catch(()=>{});
+            document.removeEventListener(
+                "click",
+                retry
+            );
+        };
+
+        document.addEventListener(
+            "click",
+            retry,
+            {once:true}
+        );
+    });
+}
 
 /* =========================================================
    SCREEN SHARE
 ========================================================= */
 
-$('share-btn').onclick =
+screenShare.addEventListener(
+    "click",
     async () => {
 
-        if(!currentVoice){
-
-            showToast(
-                'Önce ses kanalına katıl.'
-            );
-
+        if(!currentVoiceChannel){
+            alert("Önce bir ses kanalına gir.");
             return;
-
         }
-
 
         if(screenStream){
+            await stopScreenShare(true);
+        }else{
+            await startScreenShare();
+        }
+    }
+);
 
-            return stopScreenShare();
+async function startScreenShare(){
 
+    try{
+
+        screenStream =
+            await navigator.mediaDevices.getDisplayMedia({
+                video:{
+                    width:{ideal:1920,max:2560},
+                    height:{ideal:1080,max:1440},
+                    frameRate:{ideal:30,max:30},
+                    cursor:"always"
+                },
+                audio:true
+            });
+
+        const videoTrack =
+            screenStream.getVideoTracks()[0];
+
+        if(videoTrack &&
+           "contentHint" in videoTrack){
+
+            videoTrack.contentHint =
+                "motion";
         }
 
+        /*
+         * Ekran sesini mikrofonla birleştirmiyoruz.
+         * Böylece yankı ihtimalini tekrar yükseltmiyoruz.
+         */
 
-        try{
+        for(const [peerId,peer] of peers){
 
-            screenStream =
-                await navigator
-                .mediaDevices
-                .getDisplayMedia({
+            if(peer.__videoSender){
 
-                    video:{
-                        width:{
-                            ideal:1920,
-                            max:2560
-                        },
-
-                        height:{
-                            ideal:1080,
-                            max:1440
-                        },
-
-                        frameRate:{
-                            ideal:30,
-                            max:30
-                        }
-                    },
-
-                    audio:true
-
-                });
-
-
-            const videoTrack =
-                screenStream
-                    .getVideoTracks()[0];
-
+                await peer.__videoSender
+                    .replaceTrack(videoTrack);
+            }
 
             if(
-                videoTrack &&
-                'contentHint' in videoTrack
+                screenStream.getAudioTracks().length &&
+                peer.__screenAudioSender
             ){
 
-                videoTrack.contentHint =
-                    'motion';
-
+                await peer.__screenAudioSender
+                    .replaceTrack(
+                        screenStream.getAudioTracks()[0]
+                    );
             }
 
+            /*
+             * Ekran paylaşımı için ayrı audio sender
+             * gerektiğinde oluşturulur.
+             */
 
-            $('share-btn')
-                .classList
-                .add('active');
-
-
-            addVideo(
-                'self-screen',
-                screenStream,
-                `${currentUser} · ekranın`
-            );
-
-
-            for(
-                const id in peers
+            if(
+                screenStream.getAudioTracks().length &&
+                !peer.__screenAudioSender
             ){
 
-                screenSenders[id] = [];
-
-
-                screenStream
-                    .getTracks()
-                    .forEach(track => {
-
-                        const sender =
-                            peers[id]
-                                .addTrack(
-                                    track,
-                                    screenStream
-                                );
-
-
-                        screenSenders[id]
-                            .push(sender);
-
-                    });
-
-
-                await negotiate(id);
-
+                peer.__screenAudioSender =
+                    peer.addTrack(
+                        screenStream.getAudioTracks()[0],
+                        screenStream
+                    );
             }
-
-
-            socket.emit(
-                'screenShareStarted'
-            );
-
-
-            if(videoTrack){
-
-                videoTrack.onended =
-                    stopScreenShare;
-
-            }
-
-        }catch(error){
-
-            showToast(
-                'Ekran paylaşımı başlatılamadı'
-            );
-
         }
 
-    };
+        screenShare.classList.add("active");
 
-
-async function stopScreenShare(){
-
-    if(!screenStream)
-        return;
-
-
-    screenStream
-        .getTracks()
-        .forEach(
-            track =>
-                track.stop()
+        socket.emit(
+            "screenShareStarted"
         );
 
+        addLocalScreen();
+
+        videoTrack.onended =
+            () => stopScreenShare(true);
+
+    }catch(error){
+
+        console.log(
+            "Ekran paylaşımı iptal edildi:",
+            error
+        );
+
+        screenStream = null;
+    }
+}
+
+async function stopScreenShare(notify = true){
+
+    if(!screenStream) return;
+
+    const tracks =
+        screenStream.getTracks();
+
+    tracks.forEach(track => track.stop());
 
     screenStream = null;
 
+    for(const [peerId,peer] of peers){
 
-    for(
-        const id in peers
-    ){
-
-        for(
-            const sender of
-            screenSenders[id] || []
-        ){
+        if(peer.__videoSender){
 
             try{
-
-                peers[id]
-                    .removeTrack(
-                        sender
-                    );
-
-            }catch(error){}
-
+                await peer.__videoSender
+                    .replaceTrack(null);
+            }catch(_){}
         }
 
+        if(peer.__screenAudioSender){
 
-        delete screenSenders[id];
+            try{
+                peer.removeTrack(
+                    peer.__screenAudioSender
+                );
+            }catch(_){}
 
-
-        await negotiate(id);
-
+            peer.__screenAudioSender = null;
+        }
     }
 
+    const local =
+        document.getElementById(
+            "media-local-screen"
+        );
 
-    $('share-btn')
-        .classList
-        .remove('active');
+    if(local){
+        local.remove();
+    }
 
+    updateMediaArea();
 
-    $('video-self-screen')?.remove();
-
-
-    socket.emit(
-        'screenShareStopped'
+    screenShare.classList.remove(
+        "active"
     );
 
+    if(notify){
+        socket.emit(
+            "screenShareStopped"
+        );
+    }
 }
 
+function addLocalScreen(){
 
-socket.on(
-    'userStartedScreenShare',
-    () => {}
-);
-
-
-socket.on(
-    'userStoppedScreenShare',
-    id => {
-
-        $(`video-${id}`)?.remove();
-
-    }
-);
-
-
-/* =========================================================
-   VIDEO
-========================================================= */
-
-function addVideo(
-    id,
-    stream,
-    label
-){
+    if(!screenStream) return;
 
     let card =
-        $(`video-${id}`);
-
+        document.getElementById(
+            "media-local-screen"
+        );
 
     if(!card){
 
         card =
-            document
-            .createElement(
-                'div'
-            );
-
+            document.createElement("div");
 
         card.id =
-            `video-${id}`;
-
+            "media-local-screen";
 
         card.className =
-            'video-card';
-
+            "media-card";
 
         card.innerHTML = `
+            <video autoplay muted playsinline></video>
 
-            <video
-                autoplay
-                playsinline
-            ></video>
-
-            <div class="video-label">
-                ${esc(label)}
-            </div>
-
-            <div class="video-tools">
-
-                <span
-                    style="
-                        font-size:9px;
-                        color:#697386
-                    "
-                >
-                    Ses
+            <div class="media-footer">
+                <span class="media-title">
+                    Ekranınız
                 </span>
 
-                <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value="100"
-                >
-
-                <button>
-                    ⛶ Tam ekran
-                </button>
-
+                <div class="media-tools">
+                    <button class="fullscreen">
+                        Tam ekran
+                    </button>
+                </div>
             </div>
-
         `;
 
-
-        $('video-area')
-            .appendChild(
-                card
-            );
-
+        mediaArea.appendChild(card);
 
         const video =
-            card.querySelector(
-                'video'
-            );
+            card.querySelector("video");
 
-
-        const range =
-            card.querySelector(
-                'input'
-            );
-
-
-        const fullscreen =
-            card.querySelector(
-                'button'
-            );
-
-
-        range.oninput =
-            () =>
-                video.volume =
-                    Number(
-                        range.value
-                    ) / 100;
-
-
-        fullscreen.onclick =
-            () =>
+        card.querySelector(".fullscreen")
+            .addEventListener("click",() => {
                 video.requestFullscreen?.();
-
-
-        if(id === 'self-screen'){
-
-            video.muted = true;
-
-            video.dataset.self =
-                '1';
-
-            range.disabled =
-                true;
-
-        }
-
+            });
     }
 
-
     const video =
-        card.querySelector(
-            'video'
-        );
-
+        card.querySelector("video");
 
     video.srcObject =
-        stream;
+        screenStream;
 
+    video.play().catch(()=>{});
 
-    video.muted =
-        id === 'self-screen' ||
-        isDeafened;
-
-
-    video
-        .play()
-        .catch(
-            () => {}
-        );
-
-
-    $('video-area')
-        .classList
-        .add('open');
-
+    updateMediaArea();
 }
 
+socket.on(
+    "userStartedScreenShare",
+    data => {
+
+        if(!data || !data.id) return;
+
+        /*
+         * Video track zaten WebRTC ontrack üzerinden geliyor.
+         * Burada yalnızca başlığın güncellenmesi için yer tutuyoruz.
+         */
+    }
+);
+
+socket.on(
+    "userStoppedScreenShare",
+    peerId => {
+
+        const card =
+            document.getElementById(
+                `media-${peerId}`
+            );
+
+        if(card){
+            card.remove();
+        }
+
+        updateMediaArea();
+    }
+);
+
+function attachRemoteVideo(peerId,stream){
+
+    if(!stream) return;
+
+    let card =
+        document.getElementById(
+            `media-${peerId}`
+        );
+
+    if(!card){
+
+        card =
+            document.createElement("div");
+
+        card.id =
+            `media-${peerId}`;
+
+        card.className =
+            "media-card";
+
+        card.innerHTML = `
+            <video autoplay playsinline></video>
+
+            <div class="media-footer">
+
+                <span class="media-title">
+                    Ekran paylaşımı
+                </span>
+
+                <div class="media-tools">
+
+                    <input
+                        class="video-volume"
+                        type="range"
+                        min="0"
+                        max="100"
+                        value="100"
+                    >
+
+                    <button class="fullscreen">
+                        Tam ekran
+                    </button>
+
+                </div>
+
+            </div>
+        `;
+
+        mediaArea.appendChild(card);
+
+        const video =
+            card.querySelector("video");
+
+        const volume =
+            card.querySelector(".video-volume");
+
+        volume.addEventListener(
+            "input",
+            () => {
+                video.volume =
+                    Number(volume.value) / 100;
+            }
+        );
+
+        card.querySelector(".fullscreen")
+            .addEventListener(
+                "click",
+                () => video.requestFullscreen?.()
+            );
+    }
+
+    const video =
+        card.querySelector("video");
+
+    video.srcObject = stream;
+
+    video.muted = deafened;
+
+    video.play().catch(()=>{});
+
+    updateMediaArea();
+}
+
+function updateMediaArea(){
+
+    if(mediaArea.children.length){
+        mediaArea.classList.add("visible");
+    }else{
+        mediaArea.classList.remove("visible");
+    }
+}
 
 /* =========================================================
-   SPEAKING DETECTION
+   DEVICE SETTINGS
 ========================================================= */
 
-let speakingTimer = null;
+settingsButton.addEventListener(
+    "click",
+    async () => {
 
+        settingsModal.classList.add("open");
 
-function startSpeaking(){
+        await refreshDevices();
 
-    if(!localStream)
+        if(!localMicStream){
+
+            try{
+                await requestMicrophone();
+            }catch(_){}
+        }
+    }
+);
+
+settingsClose.addEventListener(
+    "click",
+    closeSettings
+);
+
+settingsModal.addEventListener(
+    "click",
+    e => {
+        if(e.target === settingsModal){
+            closeSettings();
+        }
+    }
+);
+
+settingsSave.addEventListener(
+    "click",
+    async () => {
+
+        const deviceId =
+            microphoneDevice.value;
+
+        if(deviceId){
+
+            if(localMicStream){
+
+                localMicStream
+                    .getTracks()
+                    .forEach(track => track.stop());
+
+                localMicStream = null;
+            }
+
+            try{
+
+                await requestMicrophone(
+                    deviceId
+                );
+
+                /*
+                 * Aktif WebRTC bağlantılarındaki audio
+                 * track'i yeni mikrofonla değiştiriyoruz.
+                 */
+
+                const newTrack =
+                    localMicStream
+                        ?.getAudioTracks()[0];
+
+                if(newTrack){
+
+                    for(const peer of peers.values()){
+
+                        if(peer.__audioSender){
+
+                            await peer.__audioSender
+                                .replaceTrack(newTrack);
+                        }
+                    }
+                }
+
+            }catch(error){
+
+                alert(
+                    error?.message ||
+                    "Mikrofon değiştirilemedi."
+                );
+            }
+        }
+
+        closeSettings();
+    }
+);
+
+function closeSettings(){
+    settingsModal.classList.remove("open");
+}
+
+async function refreshDevices(){
+
+    if(!navigator.mediaDevices?.enumerateDevices){
         return;
+    }
 
+    const devices =
+        await navigator.mediaDevices.enumerateDevices();
+
+    microphoneDevice.innerHTML = "";
+    outputDevice.innerHTML = "";
+
+    const inputs =
+        devices.filter(
+            d => d.kind === "audioinput"
+        );
+
+    const outputs =
+        devices.filter(
+            d => d.kind === "audiooutput"
+        );
+
+    if(!inputs.length){
+
+        const option =
+            document.createElement("option");
+
+        option.textContent =
+            "Mikrofon bulunamadı";
+
+        microphoneDevice.appendChild(option);
+
+    }else{
+
+        inputs.forEach((device,index) => {
+
+            const option =
+                document.createElement("option");
+
+            option.value =
+                device.deviceId;
+
+            option.textContent =
+                device.label ||
+                `Mikrofon ${index + 1}`;
+
+            microphoneDevice.appendChild(option);
+        });
+    }
+
+    if(!outputs.length){
+
+        const option =
+            document.createElement("option");
+
+        option.textContent =
+            "Varsayılan ses çıkışı";
+
+        outputDevice.appendChild(option);
+
+    }else{
+
+        outputs.forEach((device,index) => {
+
+            const option =
+                document.createElement("option");
+
+            option.value =
+                device.deviceId;
+
+            option.textContent =
+                device.label ||
+                `Ses çıkışı ${index + 1}`;
+
+            outputDevice.appendChild(option);
+        });
+    }
+}
+
+if(navigator.mediaDevices){
+
+    navigator.mediaDevices.addEventListener(
+        "devicechange",
+        refreshDevices
+    );
+}
+
+outputDevice.addEventListener(
+    "change",
+    async () => {
+
+        const deviceId =
+            outputDevice.value;
+
+        if(!deviceId) return;
+
+        if(
+            typeof HTMLMediaElement.prototype
+                .setSinkId !== "function"
+        ){
+            return;
+        }
+
+        document
+            .querySelectorAll(
+                "audio[data-remote='true']"
+            )
+            .forEach(async audio => {
+
+                try{
+                    await audio.setSinkId(
+                        deviceId
+                    );
+                }catch(_){}
+            });
+    }
+);
+
+/* =========================================================
+   SCREEN / CONNECTION UI
+========================================================= */
+
+socket.on("voiceConnectionState", state => {
+
+    if(!currentVoiceChannel) return;
+
+    voiceConnectionLabel.textContent =
+        state || "Bağlantı aktif";
+});
+
+/* =========================================================
+   SETTINGS PERSISTENCE
+========================================================= */
+
+function saveLocalSettings(){
 
     try{
 
-        const context =
-            new AudioContext();
-
-
-        const source =
-            context
-            .createMediaStreamSource(
-                localStream
-            );
-
-
-        const analyser =
-            context
-            .createAnalyser();
-
-
-        analyser.fftSize =
-            512;
-
-
-        source.connect(
-            analyser
+        localStorage.setItem(
+            "waffle.username",
+            currentUser
         );
 
+        localStorage.setItem(
+            "waffle.color",
+            currentColor
+        );
 
-        const data =
-            new Uint8Array(
-                analyser.frequencyBinCount
-            );
-
-
-        let active = false;
-
-
-        speakingTimer =
-            setInterval(
-                () => {
-
-                    if(
-                        isMuted ||
-                        !currentVoice
-                    ){
-
-                        if(active){
-
-                            active = false;
-
-                            socket.emit(
-                                'speakingStatus',
-                                false
-                            );
-
-                        }
-
-                        return;
-
-                    }
-
-
-                    analyser
-                        .getByteFrequencyData(
-                            data
-                        );
-
-
-                    let sum = 0;
-
-
-                    for(
-                        const value of data
-                    ){
-
-                        sum +=
-                            value *
-                            value;
-
-                    }
-
-
-                    const rms =
-                        Math.sqrt(
-                            sum /
-                            data.length
-                        ) / 255;
-
-
-                    const next =
-                        rms > .045;
-
-
-                    if(next !== active){
-
-                        active = next;
-
-                        socket.emit(
-                            'speakingStatus',
-                            active
-                        );
-
-                    }
-
-                },
-                120
-            );
-
-    }catch(error){}
-
+    }catch(_){}
 }
 
+try{
 
-/* =========================================================
-   SEARCH
-========================================================= */
+    const savedName =
+        localStorage.getItem(
+            "waffle.username"
+        );
 
-$('search-input')
-.addEventListener(
-    'input',
-    renderMessages
-);
+    const savedColor =
+        localStorage.getItem(
+            "waffle.color"
+        );
 
-
-window.addEventListener(
-    'keydown',
-    event => {
-
-        if(
-            (event.ctrlKey ||
-             event.metaKey) &&
-            event.key.toLowerCase() ===
-            'k'
-        ){
-
-            event.preventDefault();
-
-            $('search-input')
-                .focus();
-
-        }
-
-
-        if(event.key === 'Escape'){
-
-            $('search-input')
-                .value = '';
-
-            renderMessages();
-
-        }
-
+    if(savedName){
+        usernameInput.value =
+            savedName;
     }
-);
 
+    if(savedColor){
+        colorInput.value =
+            savedColor;
+    }
 
-/* =========================================================
-   SETTINGS
-========================================================= */
-
-function openSettings(){
-
-    $('settings-modal')
-        .classList
-        .add('show');
-
-}
-
-
-function closeSettings(){
-
-    $('settings-modal')
-        .classList
-        .remove('show');
-
-}
-
-
-$('settings-btn').onclick =
-    openSettings;
-
-
-$('top-settings').onclick =
-    openSettings;
-
-
-$('settings-close').onclick =
-    closeSettings;
-
-
-$('settings-modal').onclick =
-    event => {
-
-        if(
-            event.target ===
-            $('settings-modal')
-        ){
-
-            closeSettings();
-
-        }
-
-    };
-
-
-$('enter-toggle').onclick =
-    () => {
-
-        enterToSend =
-            !enterToSend;
-
-
-        $('enter-toggle')
-            .classList
-            .toggle(
-                'on',
-                enterToSend
-            );
-
-    };
-
-
-$('audio-toggle').onclick =
-    () => {
-
-        audioEnabled =
-            !audioEnabled;
-
-
-        $('audio-toggle')
-            .classList
-            .toggle(
-                'on',
-                audioEnabled
-            );
-
-
-        showToast(
-            audioEnabled
-            ?
-            'Tarayıcı ses iyileştirmeleri açık'
-            :
-            'Ses iyileştirmeleri kapatıldı; yeniden bağlanınca uygulanır'
-        );
-
-    };
-
-
-$('master-volume').oninput =
-    event => {
-
-        $('audio-container')
-            .querySelectorAll(
-                'audio'
-            )
-            .forEach(
-                audio =>
-                    audio.volume =
-                    Number(
-                        event.target.value
-                    ) / 100
-            );
-
-    };
-
-
-/* =========================================================
-   MOBILE
-========================================================= */
-
-$('mobile-menu').onclick =
-    () =>
-        $('sidebar')
-            .classList
-            .toggle('open');
-
-
-/* =========================================================
-   LOGOUT
-========================================================= */
-
-$('logout-btn').onclick =
-    () => {
-
-        leaveVoice();
-
-        socket.disconnect();
-
-        location.reload();
-
-    };
-
+}catch(_){}
 
 /* =========================================================
    CLEANUP
 ========================================================= */
 
 window.addEventListener(
-    'beforeunload',
+    "beforeunload",
     () => {
 
-        try{
+        if(localMicStream){
 
-            leaveVoice();
+            localMicStream
+                .getTracks()
+                .forEach(track => track.stop());
+        }
 
-        }catch(error){}
+        if(screenStream){
 
+            screenStream
+                .getTracks()
+                .forEach(track => track.stop());
+        }
+
+        peers.forEach(peer => {
+            try{
+                peer.close();
+            }catch(_){}
+        });
     }
 );
 
+/* =========================================================
+   INITIAL UI
+========================================================= */
 
-/* INITIAL */
-
-renderRoom();
-
-})();
+updateMuteUI();
+setDeafened(false);
+setConnection("Bağlanıyor", false);
 
 </script>
-
 </body>
 </html>
