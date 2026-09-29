@@ -1,37 +1,52 @@
-const express = require('express');
-const http = require('http');
-const path = require('path');
-const { Server } = require('socket.io');
+"use strict";
 
-
-/* =========================================================
-   SERVER
-========================================================= */
+const express = require("express");
+const http = require("http");
+const path = require("path");
+const { Server } = require("socket.io");
 
 const app = express();
 
-const server =
-    http.createServer(app);
+const server = http.createServer(app);
 
-const io =
-    new Server(server, {
+const io = new Server(server, {
+    maxHttpBufferSize: 1024 * 1024,
 
-        maxHttpBufferSize:
-            1e6,
+    pingInterval: 25000,
+    pingTimeout: 20000,
 
-        pingTimeout:
-            20000,
+    transports: ["websocket", "polling"],
 
-        pingInterval:
-            25000,
+    cors: {
+        origin: true,
+        credentials: true
+    }
+});
 
-        cors:{
-            origin:true,
-            credentials:false
-        }
+app.disable("x-powered-by");
 
-    });
+app.use(
+    express.json({
+        limit: "64kb"
+    })
+);
 
+app.use(
+    express.static(
+        path.join(__dirname, "public")
+    )
+);
+
+app.get("/", (req, res) => {
+
+    res.sendFile(
+        path.join(
+            __dirname,
+            "public",
+            "index.html"
+        )
+    );
+});
 
 /* =========================================================
    CONFIG
@@ -41,1099 +56,979 @@ const PORT =
     Number(process.env.PORT) || 3000;
 
 const ROOM_PASSWORD =
-    process.env.ROOM_PASSWORD ||
-    '123456';
+    process.env.ROOM_PASSWORD || "123456";
 
+if(ROOM_PASSWORD === "123456"){
 
-const TEXT_ROOMS = [
-    'Genel',
-    'Oyun',
-    'Müzik'
-];
+    console.warn(
+        "\n[WAFFLE] UYARI: ROOM_PASSWORD ayarlanmamış."
+    );
 
+    console.warn(
+        "[WAFFLE] Varsayılan şifre 123456 kullanılıyor.\n"
+    );
+}
 
-const VOICE_ROOMS = [
-    'Sesli - Genel',
-    'Sesli - Oyun'
-];
+/*
+ * TURN desteği:
+ *
+ * Örnek:
+ *
+ * TURN_URL=turn:example.com:3478
+ * TURN_USERNAME=waffle
+ * TURN_CREDENTIAL=secret
+ *
+ * Birden fazla TURN URL'si virgülle ayrılabilir.
+ */
 
+function getIceServers(){
+
+    const servers = [
+        {
+            urls: [
+                "stun:stun.l.google.com:19302"
+            ]
+        },
+
+        {
+            urls: [
+                "stun:stun1.l.google.com:19302"
+            ]
+        },
+
+        {
+            urls: [
+                "stun:stun.cloudflare.com:3478"
+            ]
+        }
+    ];
+
+    const turnUrl =
+        process.env.TURN_URL;
+
+    const turnUsername =
+        process.env.TURN_USERNAME;
+
+    const turnCredential =
+        process.env.TURN_CREDENTIAL;
+
+    if(
+        turnUrl &&
+        turnUsername &&
+        turnCredential
+    ){
+
+        const urls =
+            turnUrl
+                .split(",")
+                .map(x => x.trim())
+                .filter(Boolean);
+
+        if(urls.length){
+
+            servers.push({
+                urls,
+                username: turnUsername,
+                credential: turnCredential
+            });
+        }
+    }
+
+    return servers;
+}
+
+/* =========================================================
+   STATIC CONFIG ENDPOINT
+========================================================= */
+
+app.get("/api/rtc-config", (req, res) => {
+
+    res.json({
+        iceServers: getIceServers()
+    });
+});
+
+/* =========================================================
+   ROOMS
+========================================================= */
+
+const TEXT_ROOMS =
+    new Set([
+        "Genel",
+        "Oyun",
+        "Müzik"
+    ]);
+
+const VOICE_ROOMS =
+    new Set([
+        "Sesli - Genel",
+        "Sesli - Oyun"
+    ]);
 
 const COLORS =
     new Set([
-        '#8b5cf6',
-        '#22c55e',
-        '#3b82f6',
-        '#ef4444',
-        '#f59e0b',
-        '#ec4899',
-        '#06b6d4',
-        '#a855f7'
+        "#7657ff",
+        "#24d6a2",
+        "#4d9cff",
+        "#ff5870",
+        "#f2bd55",
+        "#ec72d8",
+        "#36c6dc"
     ]);
-
 
 /* =========================================================
    STATE
 ========================================================= */
 
 const users =
-    Object.create(null);
-
+    new Map();
 
 const voiceChannels = {
-
-    'Sesli - Genel': [],
-
-    'Sesli - Oyun': []
-
+    "Sesli - Genel": [],
+    "Sesli - Oyun": []
 };
 
-
-const history =
-    Object.fromEntries(
-        TEXT_ROOMS.map(
-            room => [
-                room,
-                []
-            ]
-        )
-    );
-
-
-const limits = {
-
-    message:
-        new Map(),
-
-    typing:
-        new Map(),
-
-    signal:
-        new Map()
-
+const messageHistory = {
+    "Genel": [],
+    "Oyun": [],
+    "Müzik": []
 };
-
 
 /* =========================================================
-   EXPRESS
+   LIMITS
 ========================================================= */
 
-app.disable(
-    'x-powered-by'
-);
+const messageRate =
+    new Map();
 
+const typingRate =
+    new Map();
 
-app.use(
-    express.static(
-        path.join(
-            __dirname,
-            'public'
-        )
-    )
-);
+const signalRate =
+    new Map();
 
+function rateLimited(
+    map,
+    id,
+    limit,
+    windowMs
+){
 
-app.get(
-    '/health',
-    (req,res) => {
+    const now =
+        Date.now();
 
-        res.json({
+    const old =
+        map.get(id);
 
-            ok:true,
+    if(
+        !old ||
+        now - old.startedAt >= windowMs
+    ){
 
-            service:'WAFFLE',
-
-            users:
-                Object.keys(
-                    users
-                ).length,
-
-            uptime:
-                Math.round(
-                    process.uptime()
-                )
-
+        map.set(id,{
+            startedAt:now,
+            count:1
         });
 
+        return false;
     }
-);
 
+    old.count++;
 
-app.get(
-    '/',
-    (req,res) => {
-
-        res.sendFile(
-            path.join(
-                __dirname,
-                'public',
-                'index.html'
-            )
-        );
-
-    }
-);
-
-
-/* =========================================================
-   HELPERS
-========================================================= */
-
-function now(){
-
-    return new Date()
-        .toLocaleTimeString(
-            'tr-TR',
-            {
-                hour:'2-digit',
-                minute:'2-digit'
-            }
-        );
-
+    return old.count > limit;
 }
 
+/* =========================================================
+   SANITIZATION
+========================================================= */
 
-function clean(
+function cleanText(
     value,
     max
 ){
 
-    if(
-        typeof value !==
-        'string'
-    ){
-
-        return '';
-
+    if(typeof value !== "string"){
+        return "";
     }
-
 
     return value
-
         .replace(
             /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g,
-            ''
+            ""
         )
-
         .trim()
-
-        .slice(
-            0,
-            max
-        );
-
+        .slice(0,max);
 }
 
+function cleanUsername(value){
 
-function username(value){
-
-    return clean(
+    return cleanText(
         value,
         24
-    )
-    .replace(
+    ).replace(
         /\s+/g,
-        ' '
+        " "
     );
-
 }
 
+function validColor(color){
 
-function validColor(value){
-
-    return COLORS.has(value)
-        ? value
-        : '#8b5cf6';
-
-}
-
-
-function limited(
-    map,
-    id,
-    max,
-    windowMs
-){
-
-    const time =
-        Date.now();
-
-
-    const item =
-        map.get(id);
-
-
-    if(
-        !item ||
-        time - item.start >=
-        windowMs
-    ){
-
-        map.set(
-            id,
-            {
-                start:time,
-                count:1
-            }
-        );
-
-        return false;
-
+    if(COLORS.has(color)){
+        return color;
     }
 
-
-    item.count++;
-
-
-    return item.count >
-        max;
-
+    return "#7657ff";
 }
 
+function allowedTextRoom(room){
 
-function broadcastUsers(){
-
-    io.emit(
-        'updateUserList',
-        Object.values(users)
-    );
-
+    return TEXT_ROOMS.has(room);
 }
 
+function allowedVoiceRoom(room){
 
-function broadcastVoice(){
-
-    io.emit(
-        'updateVoiceState',
-        voiceChannels
-    );
-
+    return VOICE_ROOMS.has(room);
 }
 
+function time(){
 
-function addHistory(
+    return new Date()
+        .toLocaleTimeString(
+            "tr-TR",
+            {
+                hour:"2-digit",
+                minute:"2-digit"
+            }
+        );
+}
+
+/* =========================================================
+   HISTORY
+========================================================= */
+
+function pushHistory(
     room,
     message
 ){
 
-    history[room]
-        .push(message);
+    if(!messageHistory[room]){
+        messageHistory[room] = [];
+    }
 
+    messageHistory[room].push(message);
 
     if(
-        history[room].length >
+        messageHistory[room].length >
         100
     ){
 
-        history[room]
-            .shift();
-
-    }
-
-}
-
-
-function system(
-    room,
-    text,
-    except
-){
-
-    const message = {
-
-        user:'Sistem',
-
-        text,
-
-        time:now(),
-
-        color:'#6f7888'
-
-    };
-
-
-    addHistory(
-        room,
-        message
-    );
-
-
-    if(except){
-
-        io.to(room)
-            .except(except)
-            .emit(
-                'message',
-                message
+        messageHistory[room]
+            .splice(
+                0,
+                messageHistory[room].length - 100
             );
-
-    }else{
-
-        io.to(room)
-            .emit(
-                'message',
-                message
-            );
-
     }
-
 }
-
 
 /* =========================================================
-   VOICE CLEANUP
+   USER LIST
 ========================================================= */
 
-function leaveVoice(
+function broadcastUsers(){
+
+    io.emit(
+        "updateUserList",
+        Array.from(
+            users.values()
+        ).map(user => ({
+            id:user.id,
+            username:user.username,
+            color:user.color,
+            room:user.room,
+            voiceChannel:user.voiceChannel
+        }))
+    );
+}
+
+/* =========================================================
+   VOICE STATE
+========================================================= */
+
+function broadcastVoiceState(){
+
+    io.emit(
+        "updateVoiceState",
+        voiceChannels
+    );
+}
+
+/* =========================================================
+   REMOVE FROM VOICE
+========================================================= */
+
+function removeFromVoice(
     socket,
-    user,
     notify = true
 ){
+
+    const user =
+        users.get(socket.id);
+
+    if(!user) return;
 
     const channel =
         user.voiceChannel;
 
-
-    if(!channel)
-        return;
-
+    if(!channel) return;
 
     if(
-        voiceChannels[channel]
+        Array.isArray(
+            voiceChannels[channel]
+        )
     ){
 
         voiceChannels[channel] =
             voiceChannels[channel]
-            .filter(
-                item =>
-                    item.id !==
-                    socket.id
-            );
-
+                .filter(
+                    member =>
+                        member.id !== socket.id
+                );
     }
 
-
-    socket.leave(
-        channel
-    );
-
+    socket.leave(channel);
 
     if(notify){
 
-        socket.to(channel)
-            .emit(
-                'userLeftVoice',
-                socket.id
-            );
+        socket.to(channel).emit(
+            "userLeftVoice",
+            socket.id
+        );
 
-
-        socket.to(channel)
-            .emit(
-                'userStoppedScreenShare',
-                socket.id
-            );
-
-
-        socket.to(channel)
-            .emit(
-                'userSpeaking',
-                {
-                    id:socket.id,
-                    isSpeaking:false
-                }
-            );
-
+        socket.to(channel).emit(
+            "userStoppedScreenShare",
+            socket.id
+        );
     }
 
+    user.voiceChannel = null;
 
-    user.voiceChannel =
-        null;
-
+    broadcastVoiceState();
+    broadcastUsers();
 }
 
-
 /* =========================================================
-   SOCKET.IO
+   SOCKET CONNECTION
 ========================================================= */
 
-io.on(
-    'connection',
-    socket => {
+io.on("connection", socket => {
 
+    console.log(
+        `[CONNECT] ${socket.id}`
+    );
 
-        /* =================================================
-           LOGIN
-        ================================================= */
+    /* =====================================================
+       LOGIN
+    ===================================================== */
 
-        socket.on(
-            'joinRoom',
-            payload => {
+    socket.on(
+        "joinRoom",
+        payload => {
 
-                if(
-                    users[socket.id]
-                )
-                    return;
+            if(users.has(socket.id)){
+                return;
+            }
 
-
-                const name =
-                    username(
-                        payload?.username
-                    );
-
-
-                const password =
-                    typeof payload?.password ===
-                    'string'
-                    ?
-                    payload.password
-                    :
-                    '';
-
-
-                const room =
-                    payload?.room;
-
-
-                if(
-                    password !==
-                    ROOM_PASSWORD
-                ){
-
-                    socket.emit(
-                        'loginError',
-                        'Hatalı şifre.'
-                    );
-
-                    return;
-
-                }
-
-
-                if(
-                    name.length < 2 ||
-                    name.length > 24
-                ){
-
-                    socket.emit(
-                        'loginError',
-                        'Kullanıcı adı 2-24 karakter olmalı.'
-                    );
-
-                    return;
-
-                }
-
-
-                if(
-                    !TEXT_ROOMS.includes(
-                        room
-                    )
-                ){
-
-                    socket.emit(
-                        'loginError',
-                        'Geçersiz sohbet odası.'
-                    );
-
-                    return;
-
-                }
-
-
-                const duplicate =
-                    Object.values(users)
-                    .some(
-                        user =>
-                            user.username
-                                .toLowerCase() ===
-                            name.toLowerCase()
-                    );
-
-
-                if(duplicate){
-
-                    socket.emit(
-                        'loginError',
-                        'Bu kullanıcı adı zaten kullanımda.'
-                    );
-
-                    return;
-
-                }
-
-
-                users[socket.id] = {
-
-                    id:
-                        socket.id,
-
-                    username:
-                        name,
-
-                    color:
-                        validColor(
-                            payload?.color
-                        ),
-
-                    room,
-
-                    voiceChannel:
-                        null
-
-                };
-
-
-                socket.join(
-                    room
+            const username =
+                cleanUsername(
+                    payload?.username
                 );
 
+            const password =
+                typeof payload?.password === "string"
+                    ? payload.password
+                    : "";
+
+            const room =
+                payload?.room;
+
+            const color =
+                validColor(
+                    payload?.color
+                );
+
+            if(password !== ROOM_PASSWORD){
 
                 socket.emit(
-                    'loginSuccess'
+                    "loginError",
+                    "Hatalı sunucu şifresi."
                 );
 
+                return;
+            }
+
+            if(
+                username.length < 2 ||
+                username.length > 24
+            ){
 
                 socket.emit(
-                    'roomHistory',
-                    {
-                        room,
-
-                        messages:
-                            history[room]
-                    }
+                    "loginError",
+                    "Kullanıcı adı 2-24 karakter olmalı."
                 );
 
-
-                broadcastUsers();
-
-                broadcastVoice();
-
-
-                system(
-                    room,
-                    `${name} katıldı.`,
-                    socket.id
-                );
-
+                return;
             }
-        );
 
-
-        /* =================================================
-           ROOM SWITCH
-        ================================================= */
-
-        socket.on(
-            'switchRoom',
-            room => {
-
-                const user =
-                    users[socket.id];
-
-
-                if(
-                    !user ||
-                    !TEXT_ROOMS.includes(
-                        room
-                    ) ||
-                    room === user.room
-                )
-                    return;
-
-
-                const old =
-                    user.room;
-
-
-                system(
-                    old,
-                    `${user.username} odadan ayrıldı.`
-                );
-
-
-                socket.leave(
-                    old
-                );
-
-
-                user.room =
-                    room;
-
-
-                socket.join(
-                    room
-                );
-
+            if(
+                !allowedTextRoom(room)
+            ){
 
                 socket.emit(
-                    'roomHistory',
-                    {
-                        room,
-
-                        messages:
-                            history[room]
-                    }
+                    "loginError",
+                    "Geçersiz sohbet odası."
                 );
 
+                return;
+            }
 
-                system(
-                    room,
-                    `${user.username} odaya katıldı.`,
-                    socket.id
+            const duplicate =
+                Array.from(
+                    users.values()
+                ).some(
+                    user =>
+                        user.username
+                            .toLowerCase() ===
+                        username.toLowerCase()
                 );
 
+            if(duplicate){
 
-                broadcastUsers();
-
-            }
-        );
-
-
-        /* =================================================
-           CHAT MESSAGE
-        ================================================= */
-
-        socket.on(
-            'chatMessage',
-            data => {
-
-                const user =
-                    users[socket.id];
-
-
-                if(
-                    !user ||
-                    limited(
-                        limits.message,
-                        socket.id,
-                        8,
-                        3000
-                    )
-                )
-                    return;
-
-
-                const text =
-                    clean(
-                        data?.text,
-                        2000
-                    );
-
-
-                if(
-                    !text ||
-                    data?.room !==
-                    user.room ||
-                    !TEXT_ROOMS.includes(
-                        data.room
-                    )
-                )
-                    return;
-
-
-                const message = {
-
-                    user:
-                        user.username,
-
-                    text,
-
-                    time:
-                        now(),
-
-                    color:
-                        user.color
-
-                };
-
-
-                addHistory(
-                    user.room,
-                    message
+                socket.emit(
+                    "loginError",
+                    "Bu kullanıcı adı zaten kullanımda."
                 );
 
-
-                io.to(user.room)
-                    .emit(
-                        'message',
-                        message
-                    );
-
+                return;
             }
-        );
 
+            const user = {
+                id:socket.id,
+                username,
+                color,
+                room,
+                voiceChannel:null
+            };
 
-        /* =================================================
-           TYPING
-        ================================================= */
+            users.set(
+                socket.id,
+                user
+            );
 
-        socket.on(
-            'typing',
-            value => {
+            socket.join(room);
 
-                const user =
-                    users[socket.id];
+            socket.emit(
+                "loginSuccess"
+            );
 
+            socket.emit(
+                "chatHistory",
+                messageHistory[room] || []
+            );
 
-                if(
-                    !user ||
-                    limited(
-                        limits.typing,
-                        socket.id,
-                        20,
-                        5000
-                    )
-                )
-                    return;
+            broadcastUsers();
+            broadcastVoiceState();
 
+            const joinMessage = {
+                user:"Sistem",
+                text:`${username} katıldı.`,
+                time:time(),
+                color:"#7f8a9a"
+            };
 
-                socket
-                    .to(user.room)
-                    .emit(
-                        'userTyping',
-                        {
-                            id:
-                                socket.id,
+            socket.to(room).emit(
+                "message",
+                joinMessage
+            );
+        }
+    );
 
-                            username:
-                                user.username,
+    /* =====================================================
+       ROOM SWITCH
+    ===================================================== */
 
-                            isTyping:
-                                Boolean(value)
-                        }
-                    );
+    socket.on(
+        "switchRoom",
+        newRoom => {
 
+            const user =
+                users.get(socket.id);
+
+            if(!user) return;
+
+            if(
+                !allowedTextRoom(newRoom)
+            ){
+                return;
             }
-        );
 
+            if(
+                newRoom === user.room
+            ){
+                socket.emit(
+                    "chatHistory",
+                    messageHistory[newRoom] || []
+                );
 
-        /* =================================================
-           JOIN VOICE
-        ================================================= */
+                return;
+            }
 
-        socket.on(
-            'joinVoiceChannel',
-            channel => {
+            const oldRoom =
+                user.room;
 
-                const user =
-                    users[socket.id];
+            socket.leave(oldRoom);
 
+            socket.to(oldRoom).emit(
+                "message",
+                {
+                    user:"Sistem",
+                    text:`${user.username} odadan ayrıldı.`,
+                    time:time(),
+                    color:"#7f8a9a"
+                }
+            );
 
-                if(
-                    !user ||
-                    !VOICE_ROOMS.includes(
-                        channel
-                    ) ||
-                    user.voiceChannel ===
-                    channel
+            user.room =
+                newRoom;
+
+            socket.join(newRoom);
+
+            socket.emit(
+                "chatHistory",
+                messageHistory[newRoom] || []
+            );
+
+            socket.to(newRoom).emit(
+                "message",
+                {
+                    user:"Sistem",
+                    text:`${user.username} odaya katıldı.`,
+                    time:time(),
+                    color:"#7f8a9a"
+                }
+            );
+
+            broadcastUsers();
+        }
+    );
+
+    /* =====================================================
+       CHAT MESSAGE
+    ===================================================== */
+
+    socket.on(
+        "chatMessage",
+        data => {
+
+            const user =
+                users.get(socket.id);
+
+            if(!user){
+                return;
+            }
+
+            if(
+                rateLimited(
+                    messageRate,
+                    socket.id,
+                    8,
+                    3000
                 )
-                    return;
+            ){
+                return;
+            }
 
+            const text =
+                cleanText(
+                    data?.text,
+                    2000
+                );
 
-                leaveVoice(
+            const room =
+                data?.room;
+
+            if(
+                !text ||
+                room !== user.room ||
+                !allowedTextRoom(room)
+            ){
+                return;
+            }
+
+            const message = {
+                user:user.username,
+                text,
+                time:time(),
+                color:user.color
+            };
+
+            pushHistory(
+                room,
+                message
+            );
+
+            io.to(room).emit(
+                "message",
+                message
+            );
+        }
+    );
+
+    /* =====================================================
+       TYPING
+    ===================================================== */
+
+    socket.on(
+        "typing",
+        isTyping => {
+
+            const user =
+                users.get(socket.id);
+
+            if(!user){
+                return;
+            }
+
+            if(
+                rateLimited(
+                    typingRate,
+                    socket.id,
+                    25,
+                    5000
+                )
+            ){
+                return;
+            }
+
+            socket.to(user.room).emit(
+                "userTyping",
+                {
+                    id:socket.id,
+                    username:user.username,
+                    isTyping:Boolean(isTyping)
+                }
+            );
+        }
+    );
+
+    /* =====================================================
+       JOIN VOICE
+    ===================================================== */
+
+    socket.on(
+        "joinVoiceChannel",
+        channel => {
+
+            const user =
+                users.get(socket.id);
+
+            if(!user){
+                return;
+            }
+
+            if(
+                !allowedVoiceRoom(channel)
+            ){
+                return;
+            }
+
+            if(
+                user.voiceChannel === channel
+            ){
+                return;
+            }
+
+            if(user.voiceChannel){
+                removeFromVoice(
                     socket,
-                    user,
                     true
                 );
+            }
 
-
-                const peers =
-                    voiceChannels[channel]
-                    .map(
-                        item =>
-                            item.id
-                    );
-
-
-                user.voiceChannel =
-                    channel;
-
-
-                socket.join(
-                    channel
-                );
-
-
+            const existingPeers =
                 voiceChannels[channel]
-                    .push({
-
-                        id:
-                            socket.id,
-
-                        username:
-                            user.username
-
-                    });
-
-
-                socket.emit(
-                    'voicePeers',
-                    peers
-                );
-
-
-                socket
-                    .to(channel)
-                    .emit(
-                        'userJoinedVoice',
-                        socket.id
+                    .map(
+                        member => member.id
                     );
 
+            user.voiceChannel =
+                channel;
 
-                broadcastVoice();
+            socket.join(channel);
 
-                broadcastUsers();
+            voiceChannels[channel].push({
+                id:socket.id,
+                username:user.username
+            });
 
+            /*
+             * Yeni kullanıcıya mevcut kullanıcıların
+             * ID'lerini gönderiyoruz.
+             *
+             * Yeni kullanıcı offer başlatıyor.
+             */
+
+            socket.emit(
+                "voicePeers",
+                existingPeers
+            );
+
+            socket.to(channel).emit(
+                "userJoinedVoice",
+                socket.id
+            );
+
+            socket.emit(
+                "voiceConnectionState",
+                "Ses bağlantısı kuruluyor..."
+            );
+
+            broadcastVoiceState();
+            broadcastUsers();
+        }
+    );
+
+    /* =====================================================
+       LEAVE VOICE
+    ===================================================== */
+
+    socket.on(
+        "leaveVoiceChannel",
+        channel => {
+
+            const user =
+                users.get(socket.id);
+
+            if(!user){
+                return;
             }
-        );
 
-
-        /* =================================================
-           LEAVE VOICE
-        ================================================= */
-
-        socket.on(
-            'leaveVoiceChannel',
-            channel => {
-
-                const user =
-                    users[socket.id];
-
-
-                if(
-                    !user ||
-                    user.voiceChannel !==
-                    channel
-                )
-                    return;
-
-
-                leaveVoice(
-                    socket,
-                    user,
-                    true
-                );
-
-
-                broadcastVoice();
-
-                broadcastUsers();
-
+            if(
+                user.voiceChannel !== channel
+            ){
+                return;
             }
-        );
 
+            removeFromVoice(
+                socket,
+                true
+            );
+        }
+    );
 
-        /* =================================================
-           WEBRTC SIGNAL
-        ================================================= */
+    /* =====================================================
+       WEBRTC SIGNAL
+    ===================================================== */
 
-        socket.on(
-            'signal',
-            data => {
+    socket.on(
+        "signal",
+        data => {
 
-                const sender =
-                    users[socket.id];
+            const sender =
+                users.get(socket.id);
 
-
-                const target =
-                    users[data?.to];
-
-
-                if(
-                    !sender ||
-                    !target ||
-                    !sender.voiceChannel ||
-                    sender.voiceChannel !==
-                    target.voiceChannel
-                )
-                    return;
-
-
-                if(
-                    limited(
-                        limits.signal,
-                        socket.id,
-                        180,
-                        10000
-                    )
-                )
-                    return;
-
-
-                if(
-                    !data?.signal ||
-                    typeof data.signal !==
-                    'object'
-                )
-                    return;
-
-
-                socket
-                    .to(data.to)
-                    .emit(
-                        'signal',
-                        {
-                            from:
-                                socket.id,
-
-                            signal:
-                                data.signal
-                        }
-                    );
-
+            if(!sender){
+                return;
             }
-        );
 
+            const targetId =
+                data?.to;
 
-        /* =================================================
-           SCREEN SHARE
-        ================================================= */
+            const target =
+                users.get(targetId);
 
-        socket.on(
-            'screenShareStarted',
-            () => {
+            if(!target){
+                return;
+            }
 
-                const user =
-                    users[socket.id];
+            if(
+                !sender.voiceChannel ||
+                sender.voiceChannel !==
+                target.voiceChannel
+            ){
+                return;
+            }
 
+            if(
+                rateLimited(
+                    signalRate,
+                    socket.id,
+                    250,
+                    10000
+                )
+            ){
+                return;
+            }
 
-                if(
-                    user?.voiceChannel
-                ){
+            if(
+                !data.signal ||
+                typeof data.signal !== "object"
+            ){
+                return;
+            }
 
-                    socket
-                        .to(user.voiceChannel)
-                        .emit(
-                            'userStartedScreenShare',
-                            {
-                                id:
-                                    socket.id,
-
-                                username:
-                                    user.username
-                            }
-                        );
-
+            socket.to(targetId).emit(
+                "signal",
+                {
+                    from:socket.id,
+                    signal:data.signal
                 }
+            );
+        }
+    );
 
+    /* =====================================================
+       SPEAKING
+    ===================================================== */
+
+    socket.on(
+        "speakingStatus",
+        isSpeaking => {
+
+            const user =
+                users.get(socket.id);
+
+            if(
+                !user ||
+                !user.voiceChannel
+            ){
+                return;
             }
-        );
 
-
-        socket.on(
-            'screenShareStopped',
-            () => {
-
-                const user =
-                    users[socket.id];
-
-
-                if(
-                    user?.voiceChannel
-                ){
-
-                    socket
-                        .to(user.voiceChannel)
-                        .emit(
-                            'userStoppedScreenShare',
-                            socket.id
-                        );
-
-                }
-
-            }
-        );
-
-
-        /* =================================================
-           SPEAKING
-        ================================================= */
-
-        socket.on(
-            'speakingStatus',
-            value => {
-
-                const user =
-                    users[socket.id];
-
-
-                if(
-                    user?.voiceChannel
-                ){
-
-                    socket
-                        .to(user.voiceChannel)
-                        .emit(
-                            'userSpeaking',
-                            {
-                                id:
-                                    socket.id,
-
-                                isSpeaking:
-                                    Boolean(value)
-                            }
-                        );
-
-                }
-
-            }
-        );
-
-
-        /* =================================================
-           DISCONNECT
-        ================================================= */
-
-        socket.on(
-            'disconnect',
-            () => {
-
-                const user =
-                    users[socket.id];
-
-
-                if(!user)
-                    return;
-
-
-                leaveVoice(
-                    socket,
-                    user,
-                    true
+            socket
+                .to(user.voiceChannel)
+                .emit(
+                    "userSpeaking",
+                    {
+                        id:socket.id,
+                        isSpeaking:Boolean(isSpeaking)
+                    }
                 );
+        }
+    );
 
+    /* =====================================================
+       SCREEN SHARE
+    ===================================================== */
 
-                system(
-                    user.room,
-                    `${user.username} ayrıldı.`
+    socket.on(
+        "screenShareStarted",
+        () => {
+
+            const user =
+                users.get(socket.id);
+
+            if(
+                !user ||
+                !user.voiceChannel
+            ){
+                return;
+            }
+
+            socket
+                .to(user.voiceChannel)
+                .emit(
+                    "userStartedScreenShare",
+                    {
+                        id:socket.id,
+                        username:user.username
+                    }
                 );
+        }
+    );
 
+    socket.on(
+        "screenShareStopped",
+        () => {
 
-                delete users[
+            const user =
+                users.get(socket.id);
+
+            if(
+                !user ||
+                !user.voiceChannel
+            ){
+                return;
+            }
+
+            socket
+                .to(user.voiceChannel)
+                .emit(
+                    "userStoppedScreenShare",
                     socket.id
-                ];
+                );
+        }
+    );
 
+    /* =====================================================
+       DISCONNECT
+    ===================================================== */
 
-                Object.values(
-                    limits
-                )
-                .forEach(
-                    map =>
-                        map.delete(
-                            socket.id
-                        )
+    socket.on(
+        "disconnect",
+        reason => {
+
+            const user =
+                users.get(socket.id);
+
+            if(!user){
+                return;
+            }
+
+            console.log(
+                `[DISCONNECT] ${user.username} (${reason})`
+            );
+
+            const oldRoom =
+                user.room;
+
+            removeFromVoice(
+                socket,
+                true
+            );
+
+            socket
+                .to(oldRoom)
+                .emit(
+                    "message",
+                    {
+                        user:"Sistem",
+                        text:`${user.username} ayrıldı.`,
+                        time:time(),
+                        color:"#7f8a9a"
+                    }
                 );
 
+            users.delete(
+                socket.id
+            );
 
-                broadcastUsers();
+            messageRate.delete(
+                socket.id
+            );
 
-                broadcastVoice();
+            typingRate.delete(
+                socket.id
+            );
 
-            }
-        );
+            signalRate.delete(
+                socket.id
+            );
 
-    }
-);
-
+            broadcastUsers();
+            broadcastVoiceState();
+        }
+    );
+});
 
 /* =========================================================
    START
@@ -1143,9 +1038,72 @@ server.listen(
     PORT,
     () => {
 
+        console.log("");
+        console.log("==================================");
+        console.log("        WAFFLE SERVER");
+        console.log("==================================");
         console.log(
-            `WAFFLE sunucusu ${PORT} portunda çalışıyor.`
+            `Port: ${PORT}`
         );
-
+        console.log(
+            `TURN: ${
+                process.env.TURN_URL
+                    ? "AKTİF"
+                    : "Yapılandırılmadı"
+            }`
+        );
+        console.log(
+            "==================================");
+        console.log("");
     }
 );
+
+/* =========================================================
+   CLEANUP
+========================================================= */
+
+setInterval(() => {
+
+    const now =
+        Date.now();
+
+    for(
+        const [id,entry]
+        of messageRate
+    ){
+
+        if(
+            now - entry.startedAt >
+            30000
+        ){
+            messageRate.delete(id);
+        }
+    }
+
+    for(
+        const [id,entry]
+        of typingRate
+    ){
+
+        if(
+            now - entry.startedAt >
+            30000
+        ){
+            typingRate.delete(id);
+        }
+    }
+
+    for(
+        const [id,entry]
+        of signalRate
+    ){
+
+        if(
+            now - entry.startedAt >
+            30000
+        ){
+            signalRate.delete(id);
+        }
+    }
+
+},30000);
